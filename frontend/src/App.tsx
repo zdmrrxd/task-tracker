@@ -12,9 +12,11 @@ import {
   LayoutDashboard,
   ListTodo,
   MousePointer2,
+  Pencil,
   Plus,
   Search,
   SlidersHorizontal,
+  Trash2,
   X,
 } from 'lucide-react'
 
@@ -53,6 +55,8 @@ function App() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
+  const [deletingTaskId, setDeletingTaskId] = useState<number | null>(null)
 
   const [newTask, setNewTask] = useState<NewTask>({
     baslik: '',
@@ -78,6 +82,7 @@ function App() {
   }, [])
 
   const openTaskModal = () => {
+    setEditingTaskId(null)
     setNewTask({
       baslik: '',
       aciklama: '',
@@ -88,39 +93,62 @@ function App() {
     setIsModalOpen(true)
   }
 
+  const openEditModal = (task: Task) => {
+    setEditingTaskId(task.id)
+    setNewTask({
+      baslik: task.baslik,
+      aciklama: task.aciklama || '',
+      durum: task.durum,
+      oncelik: task.oncelik,
+    })
+    setIsModalOpen(true)
+  }
+
   const closeTaskModal = () => {
     if (!isSaving) {
       setIsModalOpen(false)
     }
   }
 
-  const handleCreateTask = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSaveTask = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (!newTask.baslik.trim()) {
       return
     }
 
+    const taskData = {
+      baslik: newTask.baslik.trim(),
+      aciklama: newTask.aciklama.trim(),
+      durum: newTask.durum,
+      oncelik: newTask.oncelik,
+    }
+
     try {
       setIsSaving(true)
 
-      const response = await axios.post<Task>(
-          'http://localhost:8080/api/tasks',
-          {
-            baslik: newTask.baslik.trim(),
-            aciklama: newTask.aciklama.trim(),
-            durum: newTask.durum,
-            oncelik: newTask.oncelik,
-          }
-      )
+      if (editingTaskId !== null) {
+        const response = await axios.put<Task>(
+            `http://localhost:8080/api/tasks/${editingTaskId}`,
+            taskData
+        )
 
-      setTasks((currentTasks) => [
-        ...currentTasks,
-        response.data,
-      ])
+        setTasks((currentTasks) =>
+            currentTasks.map((task) =>
+                task.id === editingTaskId ? response.data : task
+            )
+        )
+      } else {
+        const response = await axios.post<Task>(
+            'http://localhost:8080/api/tasks',
+            taskData
+        )
+
+        setTasks((currentTasks) => [...currentTasks, response.data])
+      }
 
       setIsModalOpen(false)
-
+      setEditingTaskId(null)
       setNewTask({
         baslik: '',
         aciklama: '',
@@ -128,13 +156,37 @@ function App() {
         oncelik: 'MEDIUM',
       })
     } catch (error) {
-      console.error('Görev oluşturulamadı:', error)
-
+      console.error('Görev kaydedilemedi:', error)
       alert(
-          'Görev oluşturulamadı. Backend bağlantısını kontrol et.'
+          editingTaskId !== null
+              ? 'Görev güncellenemedi. Backend bağlantısını kontrol et.'
+              : 'Görev oluşturulamadı. Backend bağlantısını kontrol et.'
       )
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handleDeleteTask = async (task: Task) => {
+    const shouldDelete = window.confirm(
+        `"${task.baslik}" görevini silmek istediğine emin misin?`
+    )
+
+    if (!shouldDelete) {
+      return
+    }
+
+    try {
+      setDeletingTaskId(task.id)
+      await axios.delete(`http://localhost:8080/api/tasks/${task.id}`)
+      setTasks((currentTasks) =>
+          currentTasks.filter((currentTask) => currentTask.id !== task.id)
+      )
+    } catch (error) {
+      console.error('Görev silinemedi:', error)
+      alert('Görev silinemedi. Backend bağlantısını kontrol et.')
+    } finally {
+      setDeletingTaskId(null)
     }
   }
 
@@ -967,6 +1019,47 @@ function App() {
                             >
                         {task.oncelik}
                       </span>
+
+                            <button
+                                type="button"
+                                onClick={() => openEditModal(task)}
+                                className="
+                          flex h-8 items-center justify-center gap-1.5
+                          rounded-[9px]
+                          border border-[#24191B]/15
+                          bg-white px-3
+                          text-[9px] font-semibold
+                          text-[#5C5350]
+                          transition
+                          hover:border-[#69ACC2]/50
+                          hover:text-[#477F92]
+                        "
+                            >
+                              <Pencil size={13} strokeWidth={1.7} />
+                              Edit
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => handleDeleteTask(task)}
+                                disabled={deletingTaskId === task.id}
+                                className="
+                          flex h-8 items-center justify-center gap-1.5
+                          rounded-[9px]
+                          border border-[#60212E]/20
+                          bg-[#60212E]/5 px-3
+                          text-[9px] font-semibold
+                          text-[#60212E]
+                          transition
+                          hover:bg-[#60212E]
+                          hover:text-white
+                          disabled:cursor-not-allowed
+                          disabled:opacity-40
+                        "
+                            >
+                              <Trash2 size={13} strokeWidth={1.7} />
+                              {deletingTaskId === task.id ? 'Deleting...' : 'Delete'}
+                            </button>
                           </div>
                         </article>
                     ))}
@@ -1065,7 +1158,7 @@ function App() {
                     text-[#60212E]
                   "
                     >
-                      NEW TASK
+                      {editingTaskId !== null ? 'EDIT TASK' : 'NEW TASK'}
                     </p>
 
                     <h2
@@ -1075,7 +1168,8 @@ function App() {
                     text-[#24191B]
                   "
                     >
-                      Create a task<span className="text-[#69ACC2]">.</span>
+                      {editingTaskId !== null ? 'Edit your task' : 'Create a task'}
+                      <span className="text-[#69ACC2]">.</span>
                     </h2>
                   </div>
 
@@ -1097,7 +1191,7 @@ function App() {
                 </div>
 
                 <form
-                    onSubmit={handleCreateTask}
+                    onSubmit={handleSaveTask}
                     className="space-y-5 p-6"
                 >
                   <div>
@@ -1304,11 +1398,19 @@ function App() {
                     disabled:opacity-50
                   "
                     >
-                      <Plus size={15} />
+                      {editingTaskId !== null ? (
+                          <Pencil size={15} />
+                      ) : (
+                          <Plus size={15} />
+                      )}
 
                       {isSaving
-                          ? 'Creating...'
-                          : 'Create task'}
+                          ? editingTaskId !== null
+                              ? 'Saving...'
+                              : 'Creating...'
+                          : editingTaskId !== null
+                              ? 'Save changes'
+                              : 'Create task'}
                     </button>
                   </div>
                 </form>
