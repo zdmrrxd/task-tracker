@@ -26,6 +26,7 @@ interface Task {
   aciklama: string
   durum: string
   oncelik: string
+  sonTarih: string | null
 }
 
 interface NewTask {
@@ -33,6 +34,21 @@ interface NewTask {
   aciklama: string
   durum: string
   oncelik: string
+  sonTarih: string
+}
+
+function normalizeStatus(status?: string) {
+  const value = (status || '').trim().toUpperCase()
+
+  if (['COMPLETED', 'DONE', 'TAMAMLANDI', 'TAMAMLANMIS', 'TAMAMLANMIŞ'].includes(value)) {
+    return 'COMPLETED'
+  }
+
+  if (['IN_PROGRESS', 'IN PROGRESS', 'DEVAM_EDIYOR', 'DEVAM EDİYOR', 'DEVAM ETMEKTE'].includes(value)) {
+    return 'IN_PROGRESS'
+  }
+
+  return value
 }
 
 function getGreeting() {
@@ -57,12 +73,21 @@ function App() {
   const [isSaving, setIsSaving] = useState(false)
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
   const [deletingTaskId, setDeletingTaskId] = useState<number | null>(null)
+  const [activeView, setActiveView] = useState<'dashboard' | 'tasks'>('tasks')
+  const [activeTab, setActiveTab] = useState<'ALL' | 'IN_PROGRESS' | 'COMPLETED' | 'UPCOMING'>('ALL')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [priorityFilter, setPriorityFilter] = useState<'ALL' | 'LOW' | 'MEDIUM' | 'HIGH'>('ALL')
+  const [sortMode, setSortMode] = useState<'DEFAULT' | 'PRIORITY_HIGH' | 'PRIORITY_LOW' | 'TITLE' | 'DATE'>('DEFAULT')
+  const [currentPage, setCurrentPage] = useState(1)
+  const tasksPerPage = 5
 
   const [newTask, setNewTask] = useState<NewTask>({
     baslik: '',
     aciklama: '',
     durum: 'IN_PROGRESS',
     oncelik: 'MEDIUM',
+    sonTarih: '',
   })
 
   const fetchTasks = async () => {
@@ -88,6 +113,7 @@ function App() {
       aciklama: '',
       durum: 'IN_PROGRESS',
       oncelik: 'MEDIUM',
+      sonTarih: '',
     })
 
     setIsModalOpen(true)
@@ -100,6 +126,7 @@ function App() {
       aciklama: task.aciklama || '',
       durum: task.durum,
       oncelik: task.oncelik,
+      sonTarih: task.sonTarih || '',
     })
     setIsModalOpen(true)
   }
@@ -117,11 +144,23 @@ function App() {
       return
     }
 
+    if (newTask.sonTarih && newTask.sonTarih < today) {
+      const originalTask = editingTaskId !== null
+          ? tasks.find((task) => task.id === editingTaskId)
+          : undefined
+
+      if (!originalTask || originalTask.sonTarih !== newTask.sonTarih) {
+        alert('Due date cannot be in the past.')
+        return
+      }
+    }
+
     const taskData = {
       baslik: newTask.baslik.trim(),
       aciklama: newTask.aciklama.trim(),
       durum: newTask.durum,
       oncelik: newTask.oncelik,
+      sonTarih: newTask.sonTarih || null,
     }
 
     try {
@@ -154,6 +193,7 @@ function App() {
         aciklama: '',
         durum: 'IN_PROGRESS',
         oncelik: 'MEDIUM',
+        sonTarih: '',
       })
     } catch (error) {
       console.error('Görev kaydedilemedi:', error)
@@ -193,14 +233,128 @@ function App() {
   const totalTasks = tasks.length
 
   const inProgressTasks = tasks.filter(
-      (task) => task.durum?.toUpperCase() === 'IN_PROGRESS'
+      (task) => normalizeStatus(task.durum) === 'IN_PROGRESS'
   ).length
 
   const completedTasks = tasks.filter(
-      (task) => task.durum?.toUpperCase() === 'COMPLETED'
+      (task) => normalizeStatus(task.durum) === 'COMPLETED'
   ).length
 
-  const dueTodayTasks = 0
+  const today = new Date().toISOString().slice(0, 10)
+
+  const dueTodayTasks = tasks.filter(
+      (task) =>
+          task.sonTarih === today &&
+          normalizeStatus(task.durum) !== 'COMPLETED'
+  ).length
+
+  const upcomingTasks = tasks.filter(
+      (task) =>
+          Boolean(task.sonTarih) &&
+          task.sonTarih! > today &&
+          normalizeStatus(task.durum) !== 'COMPLETED'
+  ).length
+
+  const formatDueDate = (date: string | null) => {
+    if (!date) return 'No due date'
+
+    return new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date(`${date}T00:00:00`))
+  }
+
+  const priorityWeight: Record<string, number> = {
+    HIGH: 3,
+    MEDIUM: 2,
+    LOW: 1,
+  }
+
+  const displayedTasks = tasks
+      .filter((task) => {
+        const query = searchTerm.trim().toLocaleLowerCase('tr-TR')
+        const matchesSearch =
+            !query ||
+            task.baslik?.toLocaleLowerCase('tr-TR').includes(query) ||
+            task.aciklama?.toLocaleLowerCase('tr-TR').includes(query)
+
+        const matchesTab =
+            activeTab === 'ALL' ||
+            (activeTab === 'UPCOMING'
+                ? Boolean(task.sonTarih) &&
+                task.sonTarih! > today &&
+                normalizeStatus(task.durum) !== 'COMPLETED'
+                : normalizeStatus(task.durum) === activeTab)
+
+        const matchesPriority =
+            priorityFilter === 'ALL' ||
+            task.oncelik?.toUpperCase() === priorityFilter
+
+        return matchesSearch && matchesTab && matchesPriority
+      })
+      .sort((a, b) => {
+        if (sortMode === 'PRIORITY_HIGH') {
+          return (priorityWeight[b.oncelik?.toUpperCase()] ?? 0) -
+              (priorityWeight[a.oncelik?.toUpperCase()] ?? 0)
+        }
+
+        if (sortMode === 'PRIORITY_LOW') {
+          return (priorityWeight[a.oncelik?.toUpperCase()] ?? 0) -
+              (priorityWeight[b.oncelik?.toUpperCase()] ?? 0)
+        }
+
+        if (sortMode === 'TITLE') {
+          return a.baslik.localeCompare(b.baslik, 'tr')
+        }
+
+        if (sortMode === 'DATE') {
+          if (!a.sonTarih && !b.sonTarih) return 0
+          if (!a.sonTarih) return 1
+          if (!b.sonTarih) return -1
+          return a.sonTarih.localeCompare(b.sonTarih)
+        }
+
+        return 0
+      })
+
+  const totalPages = Math.max(1, Math.ceil(displayedTasks.length / tasksPerPage))
+  const safeCurrentPage = Math.min(currentPage, totalPages)
+  const paginatedTasks = displayedTasks.slice(
+      (safeCurrentPage - 1) * tasksPerPage,
+      safeCurrentPage * tasksPerPage
+  )
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, priorityFilter, activeTab, sortMode])
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
+
+  const cycleSortMode = () => {
+    setSortMode((current) => {
+      if (current === 'DEFAULT') return 'PRIORITY_HIGH'
+      if (current === 'PRIORITY_HIGH') return 'PRIORITY_LOW'
+      if (current === 'PRIORITY_LOW') return 'TITLE'
+      if (current === 'TITLE') return 'DATE'
+      return 'DEFAULT'
+    })
+  }
+
+  const sortLabel =
+      sortMode === 'PRIORITY_HIGH'
+          ? 'High → Low'
+          : sortMode === 'PRIORITY_LOW'
+              ? 'Low → High'
+              : sortMode === 'TITLE'
+                  ? 'A → Z'
+                  : sortMode === 'DATE'
+                      ? 'Due date'
+                      : 'Sort'
 
   const statBase = `
     min-h-[210px]
@@ -327,14 +481,20 @@ function App() {
               "
               >
                 <button
-                    className="
+                    type="button"
+                    onClick={() => {
+                      setActiveView('dashboard')
+                      setActiveTab('ALL')
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }}
+                    className={`
                   flex min-h-12 w-full items-center gap-3
-                  rounded-xl bg-transparent px-3.5
-                  text-[#766D69] transition-all duration-200
-                  hover:bg-white/65 hover:text-[#24191B]
-                  sm:w-auto sm:min-w-[145px]
-                  lg:w-full lg:min-w-0
-                "
+                  rounded-xl px-3.5 transition-all duration-200
+                  sm:w-auto sm:min-w-[145px] lg:w-full lg:min-w-0
+                  ${activeView === 'dashboard'
+                        ? 'bg-[#60212E] text-white'
+                        : 'bg-transparent text-[#766D69] hover:bg-white/65 hover:text-[#24191B]'}
+                `}
                 >
                   <LayoutDashboard size={18} strokeWidth={1.6} />
 
@@ -344,14 +504,20 @@ function App() {
                 </button>
 
                 <button
-                    className="
+                    type="button"
+                    onClick={() => {
+                      setActiveView('tasks')
+                      setActiveTab('ALL')
+                      document.getElementById('tasks-section')?.scrollIntoView({ behavior: 'smooth' })
+                    }}
+                    className={`
                   flex min-h-12 w-full items-center gap-3
-                  rounded-xl bg-[#60212E] px-3.5
-                  text-white transition-colors duration-200
-                  hover:bg-[#481722]
-                  sm:w-auto sm:min-w-[145px]
-                  lg:w-full lg:min-w-0
-                "
+                  rounded-xl px-3.5 transition-colors duration-200
+                  sm:w-auto sm:min-w-[145px] lg:w-full lg:min-w-0
+                  ${activeView === 'tasks'
+                        ? 'bg-[#60212E] text-white hover:bg-[#481722]'
+                        : 'bg-transparent text-[#766D69] hover:bg-white/65 hover:text-[#24191B]'}
+                `}
                 >
                   <ListTodo size={18} strokeWidth={1.6} />
 
@@ -497,6 +663,8 @@ function App() {
 
                   <input
                       type="text"
+                      value={searchTerm}
+                      onChange={(event) => setSearchTerm(event.target.value)}
                       placeholder="Search your tasks"
                       aria-label="Search your tasks"
                       className="
@@ -785,7 +953,7 @@ function App() {
 
             {/* TASKS */}
 
-            <section className="w-full pt-12">
+            <section id="tasks-section" className="w-full pt-12">
               <div
                   className="
                 mb-[30px]
@@ -816,32 +984,58 @@ function App() {
                 </div>
 
                 <div className="flex w-full items-center gap-2 sm:w-auto">
-                  <button
-                      className="
-                    flex h-10 flex-1 items-center justify-center gap-[7px]
-                    rounded-[11px]
-                    border border-[#24191B]/15
-                    bg-white px-3.5
-                    text-[10px] font-medium text-[#766D69]
-                    sm:flex-none
-                  "
-                  >
-                    <SlidersHorizontal size={15} />
-                    Filter
-                  </button>
+                  <div className="relative flex-1 sm:flex-none">
+                    <button
+                        type="button"
+                        onClick={() => setFilterOpen((open) => !open)}
+                        className="
+                      flex h-10 w-full items-center justify-center gap-[7px]
+                      rounded-[11px] border border-[#24191B]/15
+                      bg-white px-3.5 text-[10px] font-medium text-[#766D69]
+                    "
+                    >
+                      <SlidersHorizontal size={15} />
+                      {priorityFilter === 'ALL' ? 'Filter' : priorityFilter}
+                    </button>
+
+                    {filterOpen && (
+                        <div className="
+                      absolute right-0 top-12 z-30 min-w-[150px]
+                      overflow-hidden rounded-[11px] border border-[#24191B]/15
+                      bg-white p-1.5 shadow-[0_12px_30px_rgba(36,25,27,0.12)]
+                    ">
+                          {(['ALL', 'HIGH', 'MEDIUM', 'LOW'] as const).map((priority) => (
+                              <button
+                                  key={priority}
+                                  type="button"
+                                  onClick={() => {
+                                    setPriorityFilter(priority)
+                                    setFilterOpen(false)
+                                  }}
+                                  className="
+                                block w-full rounded-[8px] px-3 py-2 text-left
+                                text-[10px] text-[#766D69] hover:bg-[#F4F0E5]
+                              "
+                              >
+                                {priority === 'ALL' ? 'All priorities' : priority}
+                              </button>
+                          ))}
+                        </div>
+                    )}
+                  </div>
 
                   <button
+                      type="button"
+                      onClick={cycleSortMode}
                       className="
                     flex h-10 flex-1 items-center justify-center gap-[7px]
-                    rounded-[11px]
-                    border border-[#24191B]/15
-                    bg-white px-3.5
-                    text-[10px] font-medium text-[#766D69]
+                    rounded-[11px] border border-[#24191B]/15
+                    bg-white px-3.5 text-[10px] font-medium text-[#766D69]
                     sm:flex-none
                   "
                   >
                     <ArrowUpDown size={15} />
-                    Sort
+                    {sortLabel}
                   </button>
                 </div>
               </div>
@@ -858,13 +1052,15 @@ function App() {
               "
               >
                 <button
-                    className="
+                    type="button"
+                    onClick={() => setActiveTab('ALL')}
+                    className={`
                   relative flex min-w-max items-center gap-[7px]
                   text-[10px] font-semibold text-white
-                  after:absolute after:bottom-0 after:left-0
-                  after:right-0 after:h-[3px]
-                  after:bg-[#69ACC2] after:content-['']
-                "
+                  ${activeTab === 'ALL'
+                        ? "after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[3px] after:bg-[#69ACC2] after:content-['']"
+                        : 'text-white/60'}
+                `}
                 >
                   All tasks
                   <span className="rounded-full bg-white/15 px-2 py-1 text-[8px]">
@@ -872,22 +1068,40 @@ function App() {
                 </span>
                 </button>
 
-                <button className="min-w-max text-[10px] text-white/60">
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('IN_PROGRESS')}
+                    className={`relative min-w-max text-[10px] ${activeTab === 'IN_PROGRESS'
+                        ? "font-semibold text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[3px] after:bg-[#69ACC2] after:content-['']"
+                        : 'text-white/60'}`}
+                >
                   In progress ({inProgressTasks})
                 </button>
 
-                <button className="min-w-max text-[10px] text-white/60">
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('COMPLETED')}
+                    className={`relative min-w-max text-[10px] ${activeTab === 'COMPLETED'
+                        ? "font-semibold text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[3px] after:bg-[#69ACC2] after:content-['']"
+                        : 'text-white/60'}`}
+                >
                   Completed ({completedTasks})
                 </button>
 
-                <button className="min-w-max text-[10px] text-white/60">
-                  Upcoming
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('UPCOMING')}
+                    className={`relative min-w-max text-[10px] ${activeTab === 'UPCOMING'
+                        ? "font-semibold text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[3px] after:bg-[#69ACC2] after:content-['']"
+                        : 'text-white/60'}`}
+                >
+                  Upcoming ({upcomingTasks})
                 </button>
               </div>
 
               {/* EMPTY OR TASK LIST */}
 
-              {tasks.length === 0 ? (
+              {displayedTasks.length === 0 ? (
                   <div
                       className="
                   flex min-h-[300px] w-full
@@ -919,11 +1133,13 @@ function App() {
                     </p>
 
                     <h3 className="font-serif text-[28px] text-[#24191B]">
-                      Nothing here yet.
+                      {tasks.length === 0 ? 'Nothing here yet.' : 'No matching tasks.'}
                     </h3>
 
                     <p className="mt-[9px] text-[10px] text-[#766D69]">
-                      Create your first task to get started.
+                      {tasks.length === 0
+                          ? 'Create your first task to get started.'
+                          : 'Try changing your search or filters.'}
                     </p>
 
                     <button
@@ -951,7 +1167,7 @@ function App() {
                   sm:p-5
                 "
                   >
-                    {tasks.map((task) => (
+                    {paginatedTasks.map((task) => (
                         <article
                             key={task.id}
                             className="
@@ -984,6 +1200,13 @@ function App() {
                             >
                               {task.aciklama || 'No description'}
                             </p>
+
+                            <div className="mt-3 flex items-center gap-1.5 text-[9px] text-[#766D69]">
+                              <CalendarDays size={13} strokeWidth={1.6} />
+                              <span>
+                                {task.sonTarih ? `Due ${formatDueDate(task.sonTarih)}` : 'No due date'}
+                              </span>
+                            </div>
                           </div>
 
                           <div
@@ -1100,6 +1323,57 @@ function App() {
                 <ChevronRight size={17} className="ml-auto" />
               </button>
 
+              {displayedTasks.length > tasksPerPage && (
+                  <div className="mt-5 flex w-full items-center justify-center gap-1.5">
+                    <button
+                        type="button"
+                        onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                        disabled={safeCurrentPage === 1}
+                        className="
+                      flex h-8 min-w-8 items-center justify-center rounded-[9px]
+                      border border-[#24191B]/15 bg-white px-2
+                      text-[10px] text-[#766D69] transition
+                      hover:border-[#69ACC2]/50 hover:text-[#477F92]
+                      disabled:cursor-not-allowed disabled:opacity-35
+                    "
+                    >
+                      ‹
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                        <button
+                            key={page}
+                            type="button"
+                            onClick={() => setCurrentPage(page)}
+                            className={`
+                          flex h-8 min-w-8 items-center justify-center rounded-[9px]
+                          border px-2 text-[10px] font-semibold transition
+                          ${safeCurrentPage === page
+                                ? 'border-[#60212E] bg-[#60212E] text-white'
+                                : 'border-[#24191B]/15 bg-white text-[#766D69] hover:border-[#69ACC2]/50 hover:text-[#477F92]'}
+                        `}
+                        >
+                          {page}
+                        </button>
+                    ))}
+
+                    <button
+                        type="button"
+                        onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                        disabled={safeCurrentPage === totalPages}
+                        className="
+                      flex h-8 min-w-8 items-center justify-center rounded-[9px]
+                      border border-[#24191B]/15 bg-white px-2
+                      text-[10px] text-[#766D69] transition
+                      hover:border-[#69ACC2]/50 hover:text-[#477F92]
+                      disabled:cursor-not-allowed disabled:opacity-35
+                    "
+                    >
+                      ›
+                    </button>
+                  </div>
+              )}
+
               <div
                   className="
                 mt-5 flex w-full
@@ -1107,9 +1381,9 @@ function App() {
               "
               >
               <span className="text-[9px] text-[#9B928D]">
-                {totalTasks === 0
+                {displayedTasks.length === 0
                     ? 'No tasks to display'
-                    : `${totalTasks} task${totalTasks === 1 ? '' : 's'} to display`}
+                    : `Showing ${(safeCurrentPage - 1) * tasksPerPage + 1}-${Math.min(safeCurrentPage * tasksPerPage, displayedTasks.length)} of ${displayedTasks.length} task${displayedTasks.length === 1 ? '' : 's'}`}
               </span>
               </div>
             </section>
@@ -1272,6 +1546,51 @@ function App() {
                     focus:ring-[#69ACC2]/10
                   "
                     />
+                  </div>
+
+                  <div>
+                    <label
+                        htmlFor="task-due-date"
+                        className="
+                    mb-2 block
+                    text-[9px] font-bold
+                    uppercase tracking-[1px]
+                    text-[#60212E]
+                  "
+                    >
+                      Due date
+                    </label>
+
+                    <div className="relative">
+                      <CalendarDays
+                          size={16}
+                          strokeWidth={1.6}
+                          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#766D69]"
+                      />
+                      <input
+                          id="task-due-date"
+                          type="date"
+                          min={editingTaskId !== null && newTask.sonTarih && newTask.sonTarih < today ? newTask.sonTarih : today}
+                          value={newTask.sonTarih}
+                          onChange={(event) =>
+                              setNewTask({
+                                ...newTask,
+                                sonTarih: event.target.value,
+                              })
+                          }
+                          className="
+                      h-[48px] w-full
+                      rounded-[12px]
+                      border border-[#24191B]/15
+                      bg-white pl-11 pr-4
+                      text-[11px] text-[#24191B]
+                      outline-none
+                      focus:border-[#69ACC2]
+                      focus:ring-[3px]
+                      focus:ring-[#69ACC2]/10
+                    "
+                      />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

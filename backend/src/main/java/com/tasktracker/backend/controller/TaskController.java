@@ -50,7 +50,7 @@ public class TaskController {
                     mevcutTask.setAciklama(yeniTask.getAciklama());
                     mevcutTask.setDurum(yeniTask.getDurum());
                     mevcutTask.setOncelik(yeniTask.getOncelik());
-
+                    mevcutTask.setSonTarih(yeniTask.getSonTarih());
                     Task guncellenenTask = taskService.gorevKaydet(mevcutTask);
                     return ResponseEntity.ok(guncellenenTask);
                 })

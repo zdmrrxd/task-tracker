@@ -1,6 +1,7 @@
 package com.tasktracker.backend.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "gorevler")
@@ -17,6 +18,11 @@ public class Task {
     private String durum;
 
     private String oncelik;
+
+    private LocalDate sonTarih;
+
+    public Task() {
+    }
 
     public Long getId() {
         return id;
@@ -58,8 +64,11 @@ public class Task {
         this.oncelik = oncelik;
     }
 
-    public Task() {
-
+    public LocalDate getSonTarih() {
+        return sonTarih;
     }
 
+    public void setSonTarih(LocalDate sonTarih) {
+        this.sonTarih = sonTarih;
+    }
 }
