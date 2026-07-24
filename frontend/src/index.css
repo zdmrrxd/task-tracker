@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", Arial, sans-serif;
+  --font-serif: "DM Serif Display", Georgia, serif;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+  }
+
+  body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: "DM Sans", Arial, sans-serif;
+    background: #faf8f1;
+    color: #24191b;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  button {
+    border: 0;
+  }
+
+  button,
+  input {
+    outline: none;
+  }
+}
