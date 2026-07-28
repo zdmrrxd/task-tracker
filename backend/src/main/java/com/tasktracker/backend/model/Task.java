@@ -1,6 +1,9 @@
 package com.tasktracker.backend.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDate;
 
 @Entity
@@ -11,12 +14,20 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Task title cannot be empty.")
+    @Column(nullable = false)
     private String baslik;
 
+    @Size(max = 500, message = "Description cannot exceed 500 characters.")
+    @Column(length = 500)
     private String aciklama;
 
+    @NotBlank(message = "Status cannot be empty.")
+    @Column(nullable = false)
     private String durum;
 
+    @NotBlank(message = "Priority cannot be empty.")
+    @Column(nullable = false)
     private String oncelik;
 
     private LocalDate sonTarih;
