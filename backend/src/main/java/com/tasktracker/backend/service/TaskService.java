@@ -3,7 +3,6 @@ package com.tasktracker.backend.service;
 import com.tasktracker.backend.model.Task;
 import com.tasktracker.backend.repository.TaskRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -16,19 +15,11 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
-    public List<Task> tumGorevleriGetir() {
-        return taskRepository.findAll();
-    }
+    public List<Task> getAllTasks() { return taskRepository.findAll(); }
 
-    public Optional<Task> gorevGetir(Long id) {
-        return taskRepository.findById(id);
-    }
+    public Optional<Task> getTaskById(Long id) { return taskRepository.findById(id); }
 
-    public Task gorevKaydet(Task task) {
-        return taskRepository.save(task);
-    }
+    public Task saveTask(Task task) { return taskRepository.save(task); }
 
-    public void gorevSil(Long id) {
-        taskRepository.deleteById(id);
-    }
+    public void deleteTask(Long id) { taskRepository.deleteById(id); }
 }
