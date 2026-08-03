@@ -16,25 +16,25 @@ export function TaskDetailModal({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-                <h2 className="mb-4 text-2xl font-bold">{task.baslik}</h2>
+                <h2 className="mb-4 text-2xl font-bold">{task.title}</h2>
 
                 <div className="space-y-3">
                     <p>
                         <strong>Description:</strong>{' '}
-                        {task.aciklama || 'No description'}
+                        {task.description || 'No description'}
                     </p>
 
                     <p>
-                        <strong>Status:</strong> {task.durum}
+                        <strong>Status:</strong> {task.status}
                     </p>
 
                     <p>
-                        <strong>Priority:</strong> {task.oncelik}
+                        <strong>Priority:</strong> {task.priority}
                     </p>
 
                     <p>
                         <strong>Due Date:</strong>{' '}
-                        {task.sonTarih || 'No due date'}
+                        {task.dueDate || 'No due date'}
                     </p>
                 </div>
 

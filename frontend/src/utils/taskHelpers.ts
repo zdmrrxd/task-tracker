@@ -1,11 +1,11 @@
 export function normalizeStatus(status?: string): string {
     const value = (status || '').trim().toUpperCase()
 
-    if (['COMPLETED', 'DONE', 'TAMAMLANDI', 'TAMAMLANMIS', 'TAMAMLANMIŞ'].includes(value)) {
+    if (['COMPLETED', 'DONE'].includes(value)) {
         return 'COMPLETED'
     }
 
-    if (['IN_PROGRESS', 'IN PROGRESS', 'DEVAM_EDIYOR', 'DEVAM EDİYOR', 'DEVAM ETMEKTE'].includes(value)) {
+    if (['IN_PROGRESS', 'IN PROGRESS'].includes(value)) {
         return 'IN_PROGRESS'
     }
 

@@ -10,28 +10,28 @@ interface TaskItemProps {
     onView: (task: Task) => void
 }
 
-export function TaskItem({ task, deletingTaskId, onEdit, onDelete, onView }: TaskItemProps)  {
-    console.log("BASLIK =", task.baslik)
+export function TaskItem({ task, deletingTaskId, onEdit, onDelete, onView }: TaskItemProps) {
+    console.log("TITLE =", task.title)
     return (
         <article className="flex flex-col gap-4 rounded-[14px] border border-[#24191B]/15 bg-[#FAF8F1] p-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-                <h3 className="font-serif text-[20px] text-[#24191B]">{task.baslik}</h3>
+                <h3 className="font-serif text-[20px] text-[#24191B]">{task.title}</h3>
                 <p className="mt-1.5 max-w-[650px] text-[10px] leading-[1.6] text-[#766D69]">
-                    {task.aciklama || 'No description'}
+                    {task.description || 'No description'}
                 </p>
                 <div className="mt-3 flex items-center gap-1.5 text-[9px] text-[#766D69]">
                     <CalendarDays size={13} strokeWidth={1.6} />
-                    <span>{task.sonTarih ? `Due ${formatDueDate(task.sonTarih)}` : 'No due date'}</span>
+                    <span>{task.dueDate ? `Due ${formatDueDate(task.dueDate)}` : 'No due date'}</span>
                 </div>
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center gap-2">
-        <span className="rounded-full border border-[#69ACC2]/40 bg-[#69ACC2]/10 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.8px] text-[#477F92]">
-          {task.durum}
-        </span>
+                <span className="rounded-full border border-[#69ACC2]/40 bg-[#69ACC2]/10 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.8px] text-[#477F92]">
+                    {task.status}
+                </span>
                 <span className="rounded-full border border-[#60212E]/20 bg-[#60212E]/5 px-3 py-1.5 text-[8px] font-bold uppercase tracking-[0.8px] text-[#60212E]">
-          {task.oncelik}
-        </span>
+                    {task.priority}
+                </span>
 
                 <button
                     type="button"

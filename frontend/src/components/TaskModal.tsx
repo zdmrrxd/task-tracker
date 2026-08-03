@@ -7,7 +7,7 @@ interface TaskModalProps {
     editingTaskId: number | null
     newTask: NewTask
     setNewTask: React.Dispatch<React.SetStateAction<NewTask>>
-    errors: { baslik: string; aciklama: string }
+    errors: { title: string; description: string }
     isSaving: boolean
     today: string
     onClose: () => void
@@ -68,14 +68,14 @@ export function TaskModal({
                         <input
                             id="task-title"
                             type="text"
-                            value={newTask.baslik}
+                            value={newTask.title}
                             onChange={(event) =>
-                                setNewTask({ ...newTask, baslik: event.target.value })
+                                setNewTask({ ...newTask, title: event.target.value })
                             }
                             placeholder="What needs to be done?"
                             className="h-[48px] w-full rounded-[12px] border border-[#24191B]/15 bg-white px-4 text-[12px] text-[#24191B] outline-none placeholder:text-[#9B928D] focus:border-[#69ACC2] focus:ring-[3px] focus:ring-[#69ACC2]/10"
                         />
-                        {errors.baslik && <p className="mt-1 text-xs text-red-600">{errors.baslik}</p>}
+                        {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title}</p>}
                     </div>
 
                     <div>
@@ -88,14 +88,14 @@ export function TaskModal({
                         <textarea
                             id="task-description"
                             rows={4}
-                            value={newTask.aciklama}
+                            value={newTask.description}
                             onChange={(event) =>
-                                setNewTask({ ...newTask, aciklama: event.target.value })
+                                setNewTask({ ...newTask, description: event.target.value })
                             }
                             placeholder="Add some details..."
                             className="w-full resize-none rounded-[12px] border border-[#24191B]/15 bg-white p-4 text-[12px] leading-[1.6] text-[#24191B] outline-none placeholder:text-[#9B928D] focus:border-[#69ACC2] focus:ring-[3px] focus:ring-[#69ACC2]/10"
                         />
-                        {errors.aciklama && <p className="mt-1 text-xs text-red-600">{errors.aciklama}</p>}
+                        {errors.description && <p className="mt-1 text-xs text-red-600">{errors.description}</p>}
                     </div>
 
                     <div>
@@ -115,13 +115,13 @@ export function TaskModal({
                                 id="task-due-date"
                                 type="date"
                                 min={
-                                    editingTaskId !== null && newTask.sonTarih && newTask.sonTarih < today
-                                        ? newTask.sonTarih
+                                    editingTaskId !== null && newTask.dueDate && newTask.dueDate < today
+                                        ? newTask.dueDate
                                         : today
                                 }
-                                value={newTask.sonTarih}
+                                value={newTask.dueDate}
                                 onChange={(event) =>
-                                    setNewTask({ ...newTask, sonTarih: event.target.value })
+                                    setNewTask({ ...newTask, dueDate: event.target.value })
                                 }
                                 className="h-[48px] w-full rounded-[12px] border border-[#24191B]/15 bg-white pl-11 pr-4 text-[11px] text-[#24191B] outline-none focus:border-[#69ACC2] focus:ring-[3px] focus:ring-[#69ACC2]/10"
                             />
@@ -138,9 +138,9 @@ export function TaskModal({
                             </label>
                             <select
                                 id="task-status"
-                                value={newTask.durum}
+                                value={newTask.status}
                                 onChange={(event) =>
-                                    setNewTask({ ...newTask, durum: event.target.value })
+                                    setNewTask({ ...newTask, status: event.target.value })
                                 }
                                 className="h-[48px] w-full rounded-[12px] border border-[#24191B]/15 bg-white px-4 text-[11px] text-[#24191B] outline-none focus:border-[#69ACC2]"
                             >
@@ -158,9 +158,9 @@ export function TaskModal({
                             </label>
                             <select
                                 id="task-priority"
-                                value={newTask.oncelik}
+                                value={newTask.priority}
                                 onChange={(event) =>
-                                    setNewTask({ ...newTask, oncelik: event.target.value })
+                                    setNewTask({ ...newTask, priority: event.target.value })
                                 }
                                 className="h-[48px] w-full rounded-[12px] border border-[#24191B]/15 bg-white px-4 text-[11px] text-[#24191B] outline-none focus:border-[#69ACC2]"
                             >

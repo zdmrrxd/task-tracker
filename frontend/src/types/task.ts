@@ -1,18 +1,18 @@
 export interface Task {
     id: number
-    baslik: string
-    aciklama: string
-    durum: string
-    oncelik: string
-    sonTarih: string | null
+    title: string
+    description: string
+    status: string
+    priority: string
+    dueDate: string | null
 }
 
 export interface NewTask {
-    baslik: string
-    aciklama: string
-    durum: string
-    oncelik: string
-    sonTarih: string
+    title: string
+    description: string
+    status: string
+    priority: string
+    dueDate: string
 }
 
 export type ViewMode = 'dashboard' | 'tasks'
