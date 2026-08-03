@@ -42,6 +42,7 @@ export function App() {
         dueDate: '',
     })
 
+
     const fetchTasks = async () => {
         try {
             const data = await taskService.getAll()
@@ -93,6 +94,7 @@ export function App() {
         setSelectedTask(null)
     }
 
+
     const handleSaveTask = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
@@ -128,26 +130,17 @@ export function App() {
             }
         }
 
-        const taskData = {
-            title: newTask.title.trim(),
-            description: newTask.description.trim(),
-            status: newTask.status,
-            priority: newTask.priority,
-            dueDate: newTask.dueDate || null,
-        }
-
         try {
             setIsSaving(true)
 
-            if (editingTaskId !== null) {
-                const updatedTask = await taskService.update(editingTaskId, taskData)
-                setTasks((currentTasks) =>
-                    currentTasks.map((task) => (task.id === editingTaskId ? updatedTask : task))
-                )
-            } else {
-                const createdTask = await taskService.create(taskData)
-                setTasks((currentTasks) => [...currentTasks, createdTask])
-            }
+
+            const savedTask = await taskService.save(newTask, editingTaskId)
+
+            setTasks((currentTasks) =>
+                editingTaskId !== null
+                    ? currentTasks.map((task) => (task.id === editingTaskId ? savedTask : task))
+                    : [...currentTasks, savedTask]
+            )
 
             setIsModalOpen(false)
             setEditingTaskId(null)
@@ -177,6 +170,7 @@ export function App() {
         }
     }
 
+
     const handleDeleteTask = async (task: Task) => {
         const shouldDelete = window.confirm(
             `Are you sure you want to delete the task "${task.title}"?`
@@ -198,7 +192,7 @@ export function App() {
         }
     }
 
-    // Calculations
+    // UI-Level Dynamics (Filtering, Sorting, Pagination)
     const totalTasks = tasks.length
     const inProgressTasks = tasks.filter(
         (task) => normalizeStatus(task.status) === 'IN_PROGRESS'
