@@ -10,9 +10,14 @@ import { taskService } from './services/taskService'
 
 import type { NewTask, PriorityFilter, SortMode, TabFilter, Task, ViewMode } from './types/task'
 import { getGreeting, normalizeStatus, priorityWeight } from './utils/taskHelpers'
+import { useLanguage } from './hooks/useLanguage'
 
 export function App() {
-    const greeting = getGreeting()
+    const { t } = useLanguage()
+    // t nesnesindeki eksik anahtarlar için tip güvenliğini devreden çıkartan güvenli yardımcı
+    const translations = t as Record<string, string>
+
+    const greeting = getGreeting(t)
     const today = new Date().toISOString().slice(0, 10)
 
     const [tasks, setTasks] = useState<Task[]>([])
@@ -41,7 +46,6 @@ export function App() {
         priority: 'MEDIUM',
         dueDate: '',
     })
-
 
     const fetchTasks = async () => {
         try {
@@ -94,7 +98,6 @@ export function App() {
         setSelectedTask(null)
     }
 
-
     const handleSaveTask = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
@@ -104,13 +107,13 @@ export function App() {
         }
 
         if (!newTask.title.trim()) {
-            validationErrors.title = 'Task title is required.'
+            validationErrors.title = translations.titleRequired || 'Task title is required.'
         } else if (newTask.title.trim().length > 100) {
-            validationErrors.title = 'Task title cannot exceed 100 characters.'
+            validationErrors.title = translations.titleTooLong || 'Task title cannot exceed 100 characters.'
         }
 
         if (newTask.description.trim().length > 500) {
-            validationErrors.description = 'Description cannot exceed 500 characters.'
+            validationErrors.description = translations.descriptionTooLong || 'Description cannot exceed 500 characters.'
         }
 
         setErrors(validationErrors)
@@ -125,14 +128,13 @@ export function App() {
                 : undefined
 
             if (!originalTask || originalTask.dueDate !== newTask.dueDate) {
-                alert('Due date cannot be in the past.')
+                alert(translations.pastDueDate || 'Due date cannot be in the past.')
                 return
             }
         }
 
         try {
             setIsSaving(true)
-
 
             const savedTask = await taskService.save(newTask, editingTaskId)
 
@@ -161,8 +163,8 @@ export function App() {
             } else {
                 alert(
                     editingTaskId !== null
-                        ? 'Failed to update task.'
-                        : 'Failed to create task.'
+                        ? (translations.failedUpdate || 'Failed to update task.')
+                        : (translations.failedCreate || 'Failed to create task.')
                 )
             }
         } finally {
@@ -170,11 +172,12 @@ export function App() {
         }
     }
 
-
     const handleDeleteTask = async (task: Task) => {
-        const shouldDelete = window.confirm(
-            `Are you sure you want to delete the task "${task.title}"?`
-        )
+        const confirmMsg = translations.confirmDelete
+            ? `${translations.confirmDelete} "${task.title}"?`
+            : `Are you sure you want to delete the task "${task.title}"?`
+
+        const shouldDelete = window.confirm(confirmMsg)
 
         if (!shouldDelete) return
 
@@ -186,7 +189,7 @@ export function App() {
             )
         } catch (error) {
             console.error('Failed to delete task:', error)
-            alert('Failed to delete task. Please check your backend connection.')
+            alert(translations.failedDelete || 'Failed to delete task. Please check your backend connection.')
         } finally {
             setDeletingTaskId(null)
         }
@@ -280,14 +283,14 @@ export function App() {
 
     const sortLabel =
         sortMode === 'PRIORITY_HIGH'
-            ? 'High → Low'
+            ? (translations.highToLow || 'High → Low')
             : sortMode === 'PRIORITY_LOW'
-                ? 'Low → High'
+                ? (translations.lowToHigh || 'Low → High')
                 : sortMode === 'TITLE'
-                    ? 'A → Z'
+                    ? (translations.aToZ || 'A → Z')
                     : sortMode === 'DATE'
-                        ? 'Due date'
-                        : 'Sort'
+                        ? (translations.dueDate || 'Due date')
+                        : (translations.sort || 'Sort')
 
     return (
         <>

@@ -1,6 +1,7 @@
 import { ArrowUpDown, ChevronRight, ListTodo, Plus, SlidersHorizontal } from 'lucide-react'
 import type { PriorityFilter, TabFilter, Task } from '../types/task'
 import { TaskItem } from './TaskItem'
+import { useLanguage } from '../hooks/useLanguage'
 
 interface TaskListSectionProps {
     tasks: Task[]
@@ -56,15 +57,46 @@ export function TaskListSection({
                                     onDeleteTask,
                                     onViewTask,
                                 }: TaskListSectionProps) {
+    const { t } = useLanguage()
+
+    // Seçili filtre değerini metin olarak döndüren yardımcı fonksiyon
+    const getFilterLabel = (filter: PriorityFilter) => {
+        switch (filter) {
+            case 'HIGH':
+                return t.high
+            case 'MEDIUM':
+                return t.medium
+            case 'LOW':
+                return t.low
+            case 'ALL':
+            default:
+                return t.filter || 'Filter'
+        }
+    }
+
+    // Dropdown seçenek metinlerini çeviren yardımcı fonksiyon
+    const getOptionLabel = (priority: 'ALL' | 'HIGH' | 'MEDIUM' | 'LOW') => {
+        switch (priority) {
+            case 'ALL':
+                return t.allPriorities || 'All Priorities'
+            case 'HIGH':
+                return t.high || 'High'
+            case 'MEDIUM':
+                return t.medium || 'Medium'
+            case 'LOW':
+                return t.low || 'Low'
+        }
+    }
+
     return (
         <section id="tasks-section" className="w-full pt-12">
             <div className="mb-[30px] flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
                 <div>
                     <p className="mb-[14px] text-[9px] font-bold uppercase tracking-[1.9px] text-[#60212E]">
-                        02 / YOUR TASKS
+                        02 / {t.myTasks?.toUpperCase()}
                     </p>
                     <h2 className="font-serif text-[37px] font-normal leading-none tracking-[-1.3px] text-[#24191B] sm:text-[42px]">
-                        Your tasks.
+                        {t.myTasks}
                     </h2>
                 </div>
 
@@ -76,12 +108,14 @@ export function TaskListSection({
                             className="flex h-10 w-full items-center justify-center gap-[7px] rounded-[11px] border border-[#24191B]/15 bg-white px-3.5 text-[10px] font-medium text-[#766D69]"
                         >
                             <SlidersHorizontal size={15} />
-                            {priorityFilter === 'ALL' ? 'Filter' : priorityFilter}
+                            {getFilterLabel(priorityFilter)}
                         </button>
 
                         {filterOpen && (
                             <div className="absolute right-0 top-12 z-30 min-w-[150px] overflow-hidden rounded-[11px] border border-[#24191B]/15 bg-white p-1.5 shadow-[0_12px_30px_rgba(36,25,27,0.12)]">
-                                {(['ALL', 'HIGH', 'MEDIUM', 'LOW'] as const).map((priority) => (
+                                {(
+                                    ['ALL', 'HIGH', 'MEDIUM', 'LOW'] as const
+                                ).map((priority) => (
                                     <button
                                         key={priority}
                                         type="button"
@@ -91,7 +125,7 @@ export function TaskListSection({
                                         }}
                                         className="block w-full rounded-[8px] px-3 py-2 text-left text-[10px] text-[#766D69] hover:bg-[#F4F0E5]"
                                     >
-                                        {priority === 'ALL' ? 'All priorities' : priority}
+                                        {getOptionLabel(priority)}
                                     </button>
                                 ))}
                             </div>
@@ -120,8 +154,10 @@ export function TaskListSection({
                             : 'text-white/60'
                     }`}
                 >
-                    All tasks
-                    <span className="rounded-full bg-white/15 px-2 py-1 text-[8px]">{totalTasks}</span>
+                    {t.allTasks}
+                    <span className="rounded-full bg-white/15 px-2 py-1 text-[8px]">
+                        {totalTasks}
+                    </span>
                 </button>
 
                 <button
@@ -133,7 +169,7 @@ export function TaskListSection({
                             : 'text-white/60'
                     }`}
                 >
-                    In progress ({inProgressTasks})
+                    {t.inProgress} ({inProgressTasks})
                 </button>
 
                 <button
@@ -145,7 +181,7 @@ export function TaskListSection({
                             : 'text-white/60'
                     }`}
                 >
-                    Completed ({completedTasks})
+                    {t.completed} ({completedTasks})
                 </button>
 
                 <button
@@ -157,7 +193,7 @@ export function TaskListSection({
                             : 'text-white/60'
                     }`}
                 >
-                    Upcoming ({upcomingTasks})
+                    {t.upcoming} ({upcomingTasks})
                 </button>
             </div>
 
@@ -168,15 +204,17 @@ export function TaskListSection({
                         <ListTodo size={27} strokeWidth={1.35} />
                     </div>
                     <p className="mb-2.5 text-[8px] font-bold uppercase tracking-[1.9px] text-[#60212E]">
-                        YOUR TASKS
+                        {t.myTasks?.toUpperCase()}
                     </p>
                     <h3 className="font-serif text-[28px] text-[#24191B]">
-                        {tasks.length === 0 ? 'Nothing here yet.' : 'No matching tasks.'}
+                        {tasks.length === 0
+                            ? t.nothingHereYet
+                            : t.noMatchingTasks}
                     </h3>
                     <p className="mt-[9px] text-[10px] text-[#766D69]">
                         {tasks.length === 0
-                            ? 'Create your first task to get started.'
-                            : 'Try changing your search or filters.'}
+                            ? t.createFirstTask
+                            : t.tryChangingFilters}
                     </p>
                     <button
                         type="button"
@@ -184,7 +222,7 @@ export function TaskListSection({
                         className="mt-[22px] flex h-[41px] items-center justify-center gap-2 rounded-[11px] bg-[#60212E] px-[17px] text-[10px] font-semibold text-white hover:bg-[#481722]"
                     >
                         <Plus size={15} />
-                        Create a task
+                        {t.createTask}
                     </button>
                 </div>
             ) : (
@@ -208,10 +246,10 @@ export function TaskListSection({
                 onClick={onOpenTaskModal}
                 className="flex min-h-[60px] w-full items-center gap-[11px] rounded-b-[16px] border border-t-0 border-[#24191B]/15 bg-[#F4F0E5] px-5 text-[#60212E] transition-colors hover:bg-[#EDE8DA]"
             >
-        <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-[#60212E] text-white">
-          <Plus size={17} />
-        </span>
-                <span className="text-[10px] font-semibold">Add a new task</span>
+                <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-[#60212E] text-white">
+                    <Plus size={17} />
+                </span>
+                <span className="text-[10px] font-semibold">{t.addTask}</span>
                 <ChevronRight size={17} className="ml-auto" />
             </button>
 
@@ -220,14 +258,19 @@ export function TaskListSection({
                 <div className="mt-5 flex w-full items-center justify-center gap-1.5">
                     <button
                         type="button"
-                        onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                        onClick={() =>
+                            setCurrentPage((page) => Math.max(1, page - 1))
+                        }
                         disabled={safeCurrentPage === 1}
                         className="flex h-8 min-w-8 items-center justify-center rounded-[9px] border border-[#24191B]/15 bg-white px-2 text-[10px] text-[#766D69] transition hover:border-[#69ACC2]/50 hover:text-[#477F92] disabled:cursor-not-allowed disabled:opacity-35"
                     >
                         ‹
                     </button>
 
-                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                    {Array.from(
+                        { length: totalPages },
+                        (_, index) => index + 1
+                    ).map((page) => (
                         <button
                             key={page}
                             type="button"
@@ -244,7 +287,11 @@ export function TaskListSection({
 
                     <button
                         type="button"
-                        onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                        onClick={() =>
+                            setCurrentPage((page) =>
+                                Math.min(totalPages, page + 1)
+                            )
+                        }
                         disabled={safeCurrentPage === totalPages}
                         className="flex h-8 min-w-8 items-center justify-center rounded-[9px] border border-[#24191B]/15 bg-white px-2 text-[10px] text-[#766D69] transition hover:border-[#69ACC2]/50 hover:text-[#477F92] disabled:cursor-not-allowed disabled:opacity-35"
                     >
@@ -254,14 +301,18 @@ export function TaskListSection({
             )}
 
             <div className="mt-5 flex w-full items-center justify-between">
-        <span className="text-[9px] text-[#9B928D]">
-          {displayedTasks.length === 0
-              ? 'No tasks to display'
-              : `Showing ${(safeCurrentPage - 1) * tasksPerPage + 1}-${Math.min(
-                  safeCurrentPage * tasksPerPage,
-                  displayedTasks.length
-              )} of ${displayedTasks.length} task${displayedTasks.length === 1 ? '' : 's'}`}
-        </span>
+                <span className="text-[9px] text-[#9B928D]">
+                    {displayedTasks.length === 0
+                        ? t.noTasksToDisplay
+                        : `${t.showing || 'Showing'} ${(safeCurrentPage - 1) * tasksPerPage + 1}-${Math.min(
+                            safeCurrentPage * tasksPerPage,
+                            displayedTasks.length
+                        )} ${t.of || 'of'} ${displayedTasks.length} ${
+                            displayedTasks.length === 1
+                                ? t.task || 'task'
+                                : t.tasks || 'tasks'
+                        }`}
+                </span>
             </div>
         </section>
     )
