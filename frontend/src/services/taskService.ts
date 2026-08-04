@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { NewTask, Task } from '../types/task'
 
-const API_BASE_URL = 'http://localhost:8080/api/tasks'
+const API_BASE_URL = 'http://localhost:8081/api/tasks'
 
 class TaskService {
 
