@@ -5,6 +5,7 @@ import com.tasktracker.backend.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -36,17 +37,12 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @Valid @RequestBody Task updatedTask) {
-        return taskService.getTaskById(id)
-                .map(existingTask -> {
-                    existingTask.setTitle(updatedTask.getTitle());
-                    existingTask.setDescription(updatedTask.getDescription());
-                    existingTask.setStatus(updatedTask.getStatus());
-                    existingTask.setPriority(updatedTask.getPriority());
-                    existingTask.setDueDate(updatedTask.getDueDate());
-                    Task savedTask = taskService.saveTask(existingTask);
-                    return ResponseEntity.ok(savedTask);
-                })
+    public ResponseEntity<Task> updateTask(
+            @PathVariable Long id,
+            @Valid @RequestBody Task updatedTask) {
+
+        return taskService.updateTask(id, updatedTask)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 

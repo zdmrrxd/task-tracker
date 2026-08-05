@@ -20,6 +20,18 @@ public class TaskService {
     public Optional<Task> getTaskById(Long id) { return taskRepository.findById(id); }
 
     public Task saveTask(Task task) { return taskRepository.save(task); }
+    public Optional<Task> updateTask(Long id, Task updatedTask) {
+        return taskRepository.findById(id)
+                .map(existingTask -> {
+                    existingTask.setTitle(updatedTask.getTitle());
+                    existingTask.setDescription(updatedTask.getDescription());
+                    existingTask.setStatus(updatedTask.getStatus());
+                    existingTask.setPriority(updatedTask.getPriority());
+                    existingTask.setDueDate(updatedTask.getDueDate());
+
+                    return taskRepository.save(existingTask);
+                });
+    }
 
     public void deleteTask(Long id) { taskRepository.deleteById(id); }
 }
