@@ -1,6 +1,6 @@
 import { LayoutDashboard, ListTodo, MousePointer2, Globe } from 'lucide-react'
 import type { ViewMode } from '../types/task'
-import { useLanguage } from '../hooks/useLanguage'
+import { useTranslation } from 'react-i18next'
 
 interface SidebarProps {
     activeView: ViewMode
@@ -9,7 +9,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeView, setActiveView, totalTasks }: SidebarProps) {
-    const { language, setLanguage, t } = useLanguage()
+    const { t, i18n } = useTranslation()
+    const language = i18n.language
 
     return (
         <aside className="relative z-10 flex w-full flex-col border-b border-[#24191B]/15 bg-[#F4F0E5] px-4 py-[22px] lg:sticky lg:top-0 lg:h-screen lg:w-[225px] lg:border-r lg:border-b-0 lg:px-[18px] lg:py-8 xl:w-[255px] xl:px-6 xl:pb-6">
@@ -19,13 +20,13 @@ export function Sidebar({ activeView, setActiveView, totalTasks }: SidebarProps)
                     <span className="text-[#69ACC2]">.</span>
                 </div>
                 <p className="mt-[14px] text-[9px] font-semibold uppercase leading-[1.5] tracking-[2px] text-[#766D69]">
-                    {t.logoSubtitle || 'PLAN. CLICK. DONE.'}
+                    {t('logoSubtitle') || 'PLAN. CLICK. DONE.'}
                 </p>
 
                 <div className="mt-4 flex items-center gap-1 rounded-lg border border-[#24191B]/15 bg-white/50 p-1">
                     <Globe size={14} className="ml-1.5 mr-0.5 text-[#766D69]" />
                     <button
-                        onClick={() => setLanguage('en')}
+                        onClick={() => i18n.changeLanguage('en')}
                         className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition ${
                             language === 'en'
                                 ? 'bg-[#60212E] text-white shadow-sm'
@@ -36,7 +37,7 @@ export function Sidebar({ activeView, setActiveView, totalTasks }: SidebarProps)
                     </button>
                     <span className="text-[10px] text-[#24191B]/20">|</span>
                     <button
-                        onClick={() => setLanguage('tr')}
+                        onClick={() => i18n.changeLanguage('tr')}
                         className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition ${
                             language === 'tr'
                                 ? 'bg-[#60212E] text-white shadow-sm'
@@ -57,7 +58,7 @@ export function Sidebar({ activeView, setActiveView, totalTasks }: SidebarProps)
 
             <div className="mt-7 w-full lg:mt-[42px]">
                 <p className="mb-[13px] pl-3 text-[9px] font-bold uppercase tracking-[1.8px] text-[#9B928D]">
-                    {t.workspace}
+                    {t('workspace')}
                 </p>
                 <nav className="flex w-full flex-col gap-1.5 sm:flex-row sm:justify-center lg:flex-col lg:justify-start">
                     <button
@@ -73,7 +74,7 @@ export function Sidebar({ activeView, setActiveView, totalTasks }: SidebarProps)
                         }`}
                     >
                         <LayoutDashboard size={18} strokeWidth={1.6} />
-                        <span className="text-xs font-medium">{t.dashboard}</span>
+                        <span className="text-xs font-medium">{t('dashboard')}</span>
                     </button>
 
                     <button
@@ -89,7 +90,7 @@ export function Sidebar({ activeView, setActiveView, totalTasks }: SidebarProps)
                         }`}
                     >
                         <ListTodo size={18} strokeWidth={1.6} />
-                        <span className="text-xs font-semibold">{t.myTasks}</span>
+                        <span className="text-xs font-semibold">{t('myTasks')}</span>
                         <span className="ml-auto flex h-[22px] min-w-[25px] items-center justify-center rounded-full bg-white/15 px-[7px] text-[9px] font-semibold text-white">
                             {totalTasks}
                         </span>
@@ -102,10 +103,10 @@ export function Sidebar({ activeView, setActiveView, totalTasks }: SidebarProps)
                     <span className="mt-[5px] h-2 w-2 shrink-0 rounded-full bg-[#69ACC2]" />
                     <div>
                         <strong className="mb-[5px] block font-serif text-sm font-normal leading-[1.2] text-[#24191B]">
-                            {t.everythingInOnePlace}
+                            {t('everythingInOnePlace')}
                         </strong>
                         <p className="text-[9px] leading-[1.55] text-[#766D69]">
-                            {t.organizedWork}
+                            {t('organizedWork')}
                         </p>
                     </div>
                 </div>

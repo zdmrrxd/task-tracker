@@ -1,7 +1,7 @@
 import type { FormEvent } from 'react'
 import { CalendarDays, Pencil, Plus, X } from 'lucide-react'
 import type { NewTask } from '../types/task'
-import { useLanguage } from '../hooks/useLanguage'
+import { useTranslation } from 'react-i18next'
 
 interface TaskModalProps {
     isModalOpen: boolean
@@ -26,7 +26,7 @@ export function TaskModal({
                               onClose,
                               onSave,
                           }: TaskModalProps) {
-    const { t } = useLanguage()
+    const { t } = useTranslation()
 
     if (!isModalOpen) return null
 
@@ -43,10 +43,10 @@ export function TaskModal({
                 <div className="flex items-start justify-between border-b border-[#24191B]/15 px-6 py-5">
                     <div>
                         <p className="mb-2 text-[8px] font-bold uppercase tracking-[1.8px] text-[#60212E]">
-                            {editingTaskId !== null ? t.editTask?.toUpperCase() : t.newTask?.toUpperCase()}
+                            {editingTaskId !== null ? t('editTask').toUpperCase() : t('newTask').toUpperCase()}
                         </p>
                         <h2 className="font-serif text-[30px] font-normal tracking-[-0.8px] text-[#24191B]">
-                            {editingTaskId !== null ? t.editTask : t.createTask}
+                            {editingTaskId !== null ? t('editTask') : t('createTask')}
                             <span className="text-[#69ACC2]">.</span>
                         </h2>
                     </div>
@@ -66,7 +66,7 @@ export function TaskModal({
                             htmlFor="task-title"
                             className="mb-2 block text-[9px] font-bold uppercase tracking-[1px] text-[#60212E]"
                         >
-                            {t.title} *
+                            {t('title')} *
                         </label>
                         <input
                             id="task-title"
@@ -75,7 +75,7 @@ export function TaskModal({
                             onChange={(event) =>
                                 setNewTask({ ...newTask, title: event.target.value })
                             }
-                            placeholder={t.taskPlaceholder}
+                            placeholder={t('taskPlaceholder')}
                             className="h-[48px] w-full rounded-[12px] border border-[#24191B]/15 bg-white px-4 text-[12px] text-[#24191B] outline-none placeholder:text-[#9B928D] focus:border-[#69ACC2] focus:ring-[3px] focus:ring-[#69ACC2]/10"
                         />
                         {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title}</p>}
@@ -86,7 +86,7 @@ export function TaskModal({
                             htmlFor="task-description"
                             className="mb-2 block text-[9px] font-bold uppercase tracking-[1px] text-[#60212E]"
                         >
-                            {t.description}
+                            {t('description')}
                         </label>
                         <textarea
                             id="task-description"
@@ -95,7 +95,7 @@ export function TaskModal({
                             onChange={(event) =>
                                 setNewTask({ ...newTask, description: event.target.value })
                             }
-                            placeholder={t.descriptionPlaceholder}
+                            placeholder={t('descriptionPlaceholder')}
                             className="w-full resize-none rounded-[12px] border border-[#24191B]/15 bg-white p-4 text-[12px] leading-[1.6] text-[#24191B] outline-none placeholder:text-[#9B928D] focus:border-[#69ACC2] focus:ring-[3px] focus:ring-[#69ACC2]/10"
                         />
                         {errors.description && <p className="mt-1 text-xs text-red-600">{errors.description}</p>}
@@ -106,7 +106,7 @@ export function TaskModal({
                             htmlFor="task-due-date"
                             className="mb-2 block text-[9px] font-bold uppercase tracking-[1px] text-[#60212E]"
                         >
-                            {t.dueDate}
+                            {t('dueDate')}
                         </label>
                         <div className="relative">
                             <CalendarDays
@@ -137,7 +137,7 @@ export function TaskModal({
                                 htmlFor="task-status"
                                 className="mb-2 block text-[9px] font-bold uppercase tracking-[1px] text-[#60212E]"
                             >
-                                {t.status}
+                                {t('status')}
                             </label>
                             <select
                                 id="task-status"
@@ -147,8 +147,8 @@ export function TaskModal({
                                 }
                                 className="h-[48px] w-full rounded-[12px] border border-[#24191B]/15 bg-white px-4 text-[11px] text-[#24191B] outline-none focus:border-[#69ACC2]"
                             >
-                                <option value="IN_PROGRESS">{t.inProgress}</option>
-                                <option value="COMPLETED">{t.completed}</option>
+                                <option value="IN_PROGRESS">{t('inProgress')}</option>
+                                <option value="COMPLETED">{t('completed')}</option>
                             </select>
                         </div>
 
@@ -157,7 +157,7 @@ export function TaskModal({
                                 htmlFor="task-priority"
                                 className="mb-2 block text-[9px] font-bold uppercase tracking-[1px] text-[#60212E]"
                             >
-                                {t.priority}
+                                {t('priority')}
                             </label>
                             <select
                                 id="task-priority"
@@ -167,9 +167,9 @@ export function TaskModal({
                                 }
                                 className="h-[48px] w-full rounded-[12px] border border-[#24191B]/15 bg-white px-4 text-[11px] text-[#24191B] outline-none focus:border-[#69ACC2]"
                             >
-                                <option value="LOW">{t.low}</option>
-                                <option value="MEDIUM">{t.medium}</option>
-                                <option value="HIGH">{t.high}</option>
+                                <option value="LOW">{t('low')}</option>
+                                <option value="MEDIUM">{t('medium')}</option>
+                                <option value="HIGH">{t('high')}</option>
                             </select>
                         </div>
                     </div>
@@ -180,7 +180,7 @@ export function TaskModal({
                             onClick={onClose}
                             className="h-[45px] rounded-[12px] border border-[#24191B]/15 bg-white px-5 text-[10px] font-semibold text-[#766D69] transition hover:bg-[#F4F0E5]"
                         >
-                            {t.cancel}
+                            {t('cancel')}
                         </button>
 
                         <button
@@ -191,11 +191,11 @@ export function TaskModal({
                             {editingTaskId !== null ? <Pencil size={15} /> : <Plus size={15} />}
                             {isSaving
                                 ? editingTaskId !== null
-                                    ? t.saving
-                                    : t.creating
+                                    ? t('saving')
+                                    : t('creating')
                                 : editingTaskId !== null
-                                    ? t.saveChanges
-                                    : t.createTask}
+                                    ? t('saveChanges')
+                                    : t('createTask')}
                         </button>
                     </div>
                 </form>

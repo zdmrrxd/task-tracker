@@ -12,18 +12,18 @@ export function normalizeStatus(status?: string): string {
     return value
 }
 
-export function getGreeting(t: any): string {
+export function getGreeting(t: (key: string) => string): string {
     const hour = new Date().getHours()
 
     if (hour >= 5 && hour < 12) {
-        return t?.goodMorning || 'Good morning'
+        return t('goodMorning')
     }
 
     if (hour >= 12 && hour < 18) {
-        return t?.goodAfternoon || 'Good afternoon'
+        return t('goodAfternoon')
     }
 
-    return t?.goodEvening || 'Good evening'
+    return t('goodEvening')
 }
 
 export function formatDueDate(date: string | null): string {

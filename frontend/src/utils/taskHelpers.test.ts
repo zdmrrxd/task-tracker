@@ -26,14 +26,16 @@ describe("formatDueDate", () => {
 });
 
 describe("getGreeting", () => {
-    it("should return translation if provided", () => {
-        const t = {
+    it("should return translation key mapping", () => {
+        const translations: Record<string, string> = {
             goodMorning: "Günaydın",
             goodAfternoon: "İyi günler",
             goodEvening: "İyi akşamlar",
         };
 
-        const greeting = getGreeting(t);
+        const tMock = (key: string) => translations[key] || key;
+
+        const greeting = getGreeting(tMock);
 
         expect([
             "Günaydın",
