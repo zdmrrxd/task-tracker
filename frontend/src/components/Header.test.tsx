@@ -2,14 +2,22 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Header } from "./Header";
 
-vi.mock("../hooks/useLanguage", () => ({
-    useLanguage: () => ({
-        t: {
-            myWorkspace: "MY WORKSPACE",
-            tasks: "Tasks",
-            headerSubtitle: "Everything you need to manage your tasks.",
-            searchTasks: "Search your tasks",
-            newTask: "New Task",
+vi.mock("react-i18next", () => ({
+    useTranslation: () => ({
+        t: (key: string) => {
+            const translations: Record<string, string> = {
+                myWorkspace: "MY WORKSPACE",
+                tasks: "Tasks",
+                headerSubtitle: "Everything you need to manage your tasks.",
+                searchTasks: "Search your tasks",
+                newTask: "New Task",
+            };
+
+            return translations[key] || key;
+        },
+        i18n: {
+            language: "en",
+            changeLanguage: vi.fn(),
         },
     }),
 }));
@@ -29,7 +37,9 @@ describe("Header", () => {
 
     it("renders search input", () => {
         render(<Header {...props} />);
-        expect(screen.getByPlaceholderText("Search your tasks")).toBeInTheDocument();
+        expect(
+            screen.getByPlaceholderText("Search your tasks")
+        ).toBeInTheDocument();
     });
 
     it("renders new task button", () => {
