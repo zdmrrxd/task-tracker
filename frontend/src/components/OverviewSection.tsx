@@ -1,5 +1,5 @@
 import { CalendarDays, Check, Clock3, Layers3 } from 'lucide-react'
-import { useLanguage } from '../hooks/useLanguage'
+import { useTranslation } from 'react-i18next'
 
 interface OverviewSectionProps {
     totalTasks: number
@@ -19,23 +19,23 @@ export function OverviewSection({
                                     completedTasks,
                                     dueTodayTasks,
                                 }: OverviewSectionProps) {
-    const { t } = useLanguage()
+    const { t } = useTranslation()
 
     return (
         <section className="grid w-full grid-cols-1 gap-[30px] border-b border-[#24191B]/15 py-[38px] sm:py-12 xl:grid-cols-[245px_minmax(0,1fr)] xl:gap-[50px]">
             <div className="max-w-[470px] pt-[5px]">
                 <p className="mb-[14px] text-[9px] font-bold uppercase tracking-[1.9px] text-[#60212E]">
-                    {t.overview}
+                    {t('overview')}
                 </p>
 
                 <h2 className="font-serif text-[34px] font-normal leading-[1.03] tracking-[-1.3px] text-[#24191B] sm:text-[38px]">
-                    {t.yourWork}
+                    {t('yourWork')}
                     <br />
-                    {t.atAGlance}
+                    {t('atAGlance')}
                 </h2>
 
                 <p className="mt-[19px] max-w-[350px] text-[11px] leading-[1.7] text-[#766D69] xl:max-w-[215px]">
-                    {t.trackTasks}
+                    {t('trackTasks')}
                 </p>
             </div>
 
@@ -55,11 +55,11 @@ export function OverviewSection({
 
                     <div className="mt-[17px] flex flex-col gap-[5px] border-t border-current pt-[13px]">
                         <strong className="text-[11px] font-semibold">
-                            {t.totalTasks}
+                            {t('totalTasks')}
                         </strong>
 
                         <span className="text-[9px] opacity-60">
-                            {t.allYourTasks}
+                            {t('allYourTasks')}
                         </span>
                     </div>
                 </article>
@@ -81,11 +81,11 @@ export function OverviewSection({
 
                     <div className="mt-[17px] flex flex-col gap-[5px] border-t border-white/65 pt-[13px]">
                         <strong className="text-[11px] font-semibold">
-                            {t.inProgress}
+                            {t('inProgress')}
                         </strong>
 
                         <span className="text-[9px] text-white/75">
-                            {t.currentlyActive}
+                            {t('currentlyActive')}
                         </span>
                     </div>
                 </article>
@@ -107,11 +107,11 @@ export function OverviewSection({
 
                     <div className="mt-[17px] flex flex-col gap-[5px] border-t border-white/65 pt-[13px]">
                         <strong className="text-[11px] font-semibold">
-                            {t.completed}
+                            {t('completed')}
                         </strong>
 
                         <span className="text-[9px] text-white/70">
-                            {t.finishedTasks}
+                            {t('finishedTasks')}
                         </span>
                     </div>
                 </article>
@@ -133,11 +133,11 @@ export function OverviewSection({
 
                     <div className="mt-[17px] flex flex-col gap-[5px] border-t border-current pt-[13px]">
                         <strong className="text-[11px] font-semibold">
-                            {t.dueToday}
+                            {t('dueToday')}
                         </strong>
 
                         <span className="text-[9px] opacity-60">
-                            {t.tasksDueToday}
+                            {t('tasksDueToday')}
                         </span>
                     </div>
                 </article>

@@ -1,4 +1,5 @@
 import type { Task } from '../types/task'
+import { useTranslation } from 'react-i18next'
 
 interface TaskDetailModalProps {
     task: Task | null
@@ -11,6 +12,8 @@ export function TaskDetailModal({
                                     onClose,
                                     onEdit,
                                 }: TaskDetailModalProps) {
+    const { t } = useTranslation()
+
     if (!task) return null
 
     return (
@@ -20,21 +23,21 @@ export function TaskDetailModal({
 
                 <div className="space-y-3">
                     <p>
-                        <strong>Description:</strong>{' '}
-                        {task.description || 'No description'}
+                        <strong>{t('description')}:</strong>{' '}
+                        {task.description || t('noDescription')}
                     </p>
 
                     <p>
-                        <strong>Status:</strong> {task.status}
+                        <strong>{t('status')}:</strong> {task.status}
                     </p>
 
                     <p>
-                        <strong>Priority:</strong> {task.priority}
+                        <strong>{t('priority')}:</strong> {task.priority}
                     </p>
 
                     <p>
-                        <strong>Due Date:</strong>{' '}
-                        {task.dueDate || 'No due date'}
+                        <strong>{t('dueDate')}:</strong>{' '}
+                        {task.dueDate || t('noDueDate')}
                     </p>
                 </div>
 
@@ -43,14 +46,14 @@ export function TaskDetailModal({
                         onClick={() => onEdit(task)}
                         className="rounded bg-blue-600 px-4 py-2 text-white"
                     >
-                        Edit
+                        {t('edit')}
                     </button>
 
                     <button
                         onClick={onClose}
                         className="rounded bg-gray-300 px-4 py-2"
                     >
-                        Close
+                        {t('cancel')}
                     </button>
                 </div>
             </div>

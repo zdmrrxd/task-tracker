@@ -1,7 +1,7 @@
 import { CalendarDays, Eye, Pencil, Trash2 } from 'lucide-react'
 import type { Task } from '../types/task'
 import { formatDueDate } from '../utils/taskHelpers'
-import { useLanguage } from '../hooks/useLanguage'
+import { useTranslation } from 'react-i18next'
 
 interface TaskItemProps {
     task: Task
@@ -12,7 +12,7 @@ interface TaskItemProps {
 }
 
 export function TaskItem({ task, deletingTaskId, onEdit, onDelete, onView }: TaskItemProps) {
-    const { t } = useLanguage()
+    const { t } = useTranslation()
 
     // Status değerini seçili dile dönüştüren yardımcı fonksiyon
     const getStatusText = (status: string) => {
@@ -20,11 +20,11 @@ export function TaskItem({ task, deletingTaskId, onEdit, onDelete, onView }: Tas
         switch (uppercaseStatus) {
             case 'COMPLETED':
             case 'DONE':
-                return t.completed
+                return t('completed')
             case 'IN_PROGRESS':
-                return t.inProgress
+                return t('inProgress')
             case 'UPCOMING':
-                return t.upcoming
+                return t('upcoming')
             default:
                 return status
         }
@@ -35,11 +35,11 @@ export function TaskItem({ task, deletingTaskId, onEdit, onDelete, onView }: Tas
         const uppercasePriority = (priority || '').toUpperCase()
         switch (uppercasePriority) {
             case 'HIGH':
-                return t.high
+                return t('high')
             case 'MEDIUM':
-                return t.medium
+                return t('medium')
             case 'LOW':
-                return t.low
+                return t('low')
             default:
                 return priority
         }
@@ -50,14 +50,14 @@ export function TaskItem({ task, deletingTaskId, onEdit, onDelete, onView }: Tas
             <div className="min-w-0">
                 <h3 className="font-serif text-[20px] text-[#24191B]">{task.title}</h3>
                 <p className="mt-1.5 max-w-[650px] text-[10px] leading-[1.6] text-[#766D69]">
-                    {task.description || t.noDescription}
+                    {task.description || t('noDescription')}
                 </p>
                 <div className="mt-3 flex items-center gap-1.5 text-[9px] text-[#766D69]">
                     <CalendarDays size={13} strokeWidth={1.6} />
                     <span>
                         {task.dueDate
-                            ? `${t.dueDate}: ${formatDueDate(task.dueDate)}`
-                            : t.noDueDate}
+                            ? `${t('dueDate')}: ${formatDueDate(task.dueDate)}`
+                            : t('noDueDate')}
                     </span>
                 </div>
             </div>
@@ -76,7 +76,7 @@ export function TaskItem({ task, deletingTaskId, onEdit, onDelete, onView }: Tas
                     className="flex h-8 items-center justify-center gap-1.5 rounded-[9px] border border-[#69ACC2]/30 bg-[#69ACC2]/10 px-3 text-[9px] font-semibold text-[#477F92] transition hover:bg-[#69ACC2] hover:text-white"
                 >
                     <Eye size={13} strokeWidth={1.7} />
-                    {t.details}
+                    {t('details')}
                 </button>
 
                 <button
@@ -85,7 +85,7 @@ export function TaskItem({ task, deletingTaskId, onEdit, onDelete, onView }: Tas
                     className="flex h-8 items-center justify-center gap-1.5 rounded-[9px] border border-[#24191B]/15 bg-white px-3 text-[9px] font-semibold text-[#5C5350] transition hover:border-[#69ACC2]/50 hover:text-[#477F92]"
                 >
                     <Pencil size={13} strokeWidth={1.7} />
-                    {t.edit}
+                    {t('edit')}
                 </button>
 
                 <button
@@ -95,7 +95,7 @@ export function TaskItem({ task, deletingTaskId, onEdit, onDelete, onView }: Tas
                     className="flex h-8 items-center justify-center gap-1.5 rounded-[9px] border border-[#60212E]/20 bg-[#60212E]/5 px-3 text-[9px] font-semibold text-[#60212E] transition hover:bg-[#60212E] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                     <Trash2 size={13} strokeWidth={1.7} />
-                    {deletingTaskId === task.id ? t.deleting : t.delete}
+                    {deletingTaskId === task.id ? t('deleting') : t('delete')}
                 </button>
             </div>
         </article>
