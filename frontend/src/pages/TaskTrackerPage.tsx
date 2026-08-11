@@ -1,24 +1,22 @@
-<<<<<<< Updated upstream
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Header } from './components/Header'
-import { OverviewSection } from './components/OverviewSection'
-import { Sidebar } from './components/Sidebar'
-import { TaskListSection } from './components/TaskListSection'
-import { TaskModal } from './components/TaskModal'
-import { TaskDetailModal } from './components/TaskDetailModal'
-import { taskService } from './services/taskService'
+import { Header } from '../components/Header'
+import { OverviewSection } from '../components/OverviewSection'
+import { Sidebar } from '../components/Sidebar'
+import { TaskListSection } from '../components/TaskListSection'
+import { TaskModal } from '../components/TaskModal'
+import { TaskDetailModal } from '../components/TaskDetailModal'
+import { taskService } from '../services/taskService'
 
-import type { NewTask, PriorityFilter, SortMode, TabFilter, Task, ViewMode } from './types/task'
-import { getGreeting, normalizeStatus, priorityWeight } from './utils/taskHelpers'
-import { useLanguage } from './hooks/useLanguage'
+import type { NewTask, PriorityFilter, SortMode, TabFilter, Task, ViewMode } from '../types/task'
+import { getGreeting, normalizeStatus, priorityWeight } from '../utils/taskHelpers'
+import { useTranslation } from 'react-i18next'
 
-export function App() {
-    const { t } = useLanguage()
-    // t nesnesindeki eksik anahtarlar için tip güvenliğini devreden çıkartan güvenli yardımcı
-    const translations = t as Record<string, string>
+export function TaskTrackerPage() {
+    const { t } = useTranslation()
 
     const greeting = getGreeting(t)
+
     const today = new Date().toISOString().slice(0, 10)
 
     const [tasks, setTasks] = useState<Task[]>([])
@@ -108,13 +106,13 @@ export function App() {
         }
 
         if (!newTask.title.trim()) {
-            validationErrors.title = translations.titleRequired || 'Task title is required.'
+            validationErrors.title = t('titleRequired') || 'Task title is required.'
         } else if (newTask.title.trim().length > 100) {
-            validationErrors.title = translations.titleTooLong || 'Task title cannot exceed 100 characters.'
+            validationErrors.title = t('titleTooLong') || 'Task title cannot exceed 100 characters.'
         }
 
         if (newTask.description.trim().length > 500) {
-            validationErrors.description = translations.descriptionTooLong || 'Description cannot exceed 500 characters.'
+            validationErrors.description = t('descriptionTooLong') || 'Description cannot exceed 500 characters.'
         }
 
         setErrors(validationErrors)
@@ -129,7 +127,7 @@ export function App() {
                 : undefined
 
             if (!originalTask || originalTask.dueDate !== newTask.dueDate) {
-                alert(translations.pastDueDate || 'Due date cannot be in the past.')
+                alert(t('pastDueDate') || 'Due date cannot be in the past.')
                 return
             }
         }
@@ -164,8 +162,8 @@ export function App() {
             } else {
                 alert(
                     editingTaskId !== null
-                        ? (translations.failedUpdate || 'Failed to update task.')
-                        : (translations.failedCreate || 'Failed to create task.')
+                        ? (t('failedUpdate') || 'Failed to update task.')
+                        : (t('failedCreate') || 'Failed to create task.')
                 )
             }
         } finally {
@@ -174,8 +172,8 @@ export function App() {
     }
 
     const handleDeleteTask = async (task: Task) => {
-        const confirmMsg = translations.confirmDelete
-            ? `${translations.confirmDelete} "${task.title}"?`
+        const confirmMsg = t('confirmDelete')
+            ? `${t('confirmDelete')} "${task.title}"?`
             : `Are you sure you want to delete the task "${task.title}"?`
 
         const shouldDelete = window.confirm(confirmMsg)
@@ -190,7 +188,7 @@ export function App() {
             )
         } catch (error) {
             console.error('Failed to delete task:', error)
-            alert(translations.failedDelete || 'Failed to delete task. Please check your backend connection.')
+            alert(t('failedDelete') || 'Failed to delete task. Please check your backend connection.')
         } finally {
             setDeletingTaskId(null)
         }
@@ -284,63 +282,91 @@ export function App() {
 
     const sortLabel =
         sortMode === 'PRIORITY_HIGH'
-            ? (translations.highToLow || 'High → Low')
+            ? (t('highToLow') || 'High → Low')
             : sortMode === 'PRIORITY_LOW'
-                ? (translations.lowToHigh || 'Low → High')
+                ? (t('lowToHigh') || 'Low → High')
                 : sortMode === 'TITLE'
-                    ? (translations.aToZ || 'A → Z')
+                    ? (t('aToZ') || 'A → Z')
                     : sortMode === 'DATE'
-                        ? (translations.dueDate || 'Due date')
-                        : (translations.sort || 'Sort')
+                        ? (t('dueDate') || 'Due date')
+                        : (t('sort') || 'Sort')
 
-=======
-import { Navigate, Route, Routes } from 'react-router-dom'
-import { LoginPage } from './pages/LoginPage'
-import { RegisterPage } from './pages/RegisterPage'
-import { UnauthorizedPage } from './pages/UnauthorizedPage'
-import { AdminPage } from './pages/AdminPage'
-import { UserListPage } from './pages/UserListPage'
-import { TaskTrackerPage } from './pages/TaskTrackerPage'
-import { ProtectedRoute } from './components/ProtectedRoute'
-
-export function App() {
->>>>>>> Stashed changes
     return (
-        <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <>
+            <div className="min-h-screen w-full bg-[#FAF8F1] text-[#24191B] lg:grid lg:grid-cols-[225px_minmax(0,1fr)] xl:grid-cols-[255px_minmax(0,1fr)]">
+                <Sidebar
+                    activeView={activeView}
+                    setActiveView={setActiveView}
+                    totalTasks={totalTasks}
+                />
 
-            <Route
-                path="/"
-                element={
-                    <ProtectedRoute>
-                        <TaskTrackerPage />
-                    </ProtectedRoute>
-                }
+                <main className="min-w-0 px-4 pb-10 pt-7 sm:px-8 sm:pt-8 xl:px-12 xl:pb-[55px] xl:pt-[42px]">
+                    <Header
+                        greeting={greeting}
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        onOpenTaskModal={openTaskModal}
+                    />
+
+                    <OverviewSection
+                        totalTasks={totalTasks}
+                        inProgressTasks={inProgressTasks}
+                        completedTasks={completedTasks}
+                        dueTodayTasks={dueTodayTasks}
+                    />
+
+                    <TaskListSection
+                        tasks={tasks}
+                        displayedTasks={displayedTasks}
+                        paginatedTasks={paginatedTasks}
+                        totalTasks={totalTasks}
+                        inProgressTasks={inProgressTasks}
+                        completedTasks={completedTasks}
+                        upcomingTasks={upcomingTasks}
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        priorityFilter={priorityFilter}
+                        setPriorityFilter={setPriorityFilter}
+                        filterOpen={filterOpen}
+                        setFilterOpen={setFilterOpen}
+                        sortLabel={sortLabel}
+                        cycleSortMode={cycleSortMode}
+                        currentPage={currentPage}
+                        setCurrentPage={setCurrentPage}
+                        totalPages={totalPages}
+                        safeCurrentPage={safeCurrentPage}
+                        tasksPerPage={tasksPerPage}
+                        deletingTaskId={deletingTaskId}
+                        onOpenTaskModal={openTaskModal}
+                        onEditTask={openEditModal}
+                        onDeleteTask={handleDeleteTask}
+                        onViewTask={openTaskDetails}
+                    />
+                </main>
+            </div>
+
+            <TaskModal
+                isModalOpen={isModalOpen}
+                editingTaskId={editingTaskId}
+                newTask={newTask}
+                setNewTask={setNewTask}
+                errors={errors}
+                isSaving={isSaving}
+                today={today}
+                onClose={closeTaskModal}
+                onSave={handleSaveTask}
             />
 
-            <Route
-                path="/admin"
-                element={
-                    <ProtectedRoute allowedRoles={['ADMIN']}>
-                        <AdminPage />
-                    </ProtectedRoute>
-                }
+            <TaskDetailModal
+                task={selectedTask}
+                onClose={closeTaskDetails}
+                onEdit={(task) => {
+                    closeTaskDetails()
+                    openEditModal(task)
+                }}
             />
-
-            <Route
-                path="/admin/users"
-                element={
-                    <ProtectedRoute allowedRoles={['ADMIN']}>
-                        <UserListPage />
-                    </ProtectedRoute>
-                }
-            />
-
-            <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        </>
     )
 }
 
-export default App
+export default TaskTrackerPage
