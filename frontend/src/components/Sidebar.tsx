@@ -1,8 +1,6 @@
-import { LayoutDashboard, ListTodo, MousePointer2, Globe, ShieldCheck, LogOut } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { LayoutDashboard, ListTodo, MousePointer2, Globe } from 'lucide-react'
 import type { ViewMode } from '../types/task'
 import { useTranslation } from 'react-i18next'
-import { useAuth } from '../context/AuthContext'
 
 interface SidebarProps {
     activeView: ViewMode
@@ -13,13 +11,6 @@ interface SidebarProps {
 export function Sidebar({ activeView, setActiveView, totalTasks }: SidebarProps) {
     const { t, i18n } = useTranslation()
     const language = i18n.language
-    const { user, logout } = useAuth()
-    const navigate = useNavigate()
-
-    const handleLogout = () => {
-        logout()
-        navigate('/login')
-    }
 
     return (
         <aside className="relative z-10 flex w-full flex-col border-b border-[#24191B]/15 bg-[#F4F0E5] px-4 py-[22px] lg:sticky lg:top-0 lg:h-screen lg:w-[225px] lg:border-r lg:border-b-0 lg:px-[18px] lg:py-8 xl:w-[255px] xl:px-6 xl:pb-6">
@@ -69,7 +60,7 @@ export function Sidebar({ activeView, setActiveView, totalTasks }: SidebarProps)
                 <p className="mb-[13px] pl-3 text-[9px] font-bold uppercase tracking-[1.8px] text-[#9B928D]">
                     {t('workspace')}
                 </p>
-                <nav className="flex w-full flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:justify-center lg:flex-col lg:justify-start">
+                <nav className="flex w-full flex-col gap-1.5 sm:flex-row sm:justify-center lg:flex-col lg:justify-start">
                     <button
                         type="button"
                         onClick={() => {
@@ -104,52 +95,19 @@ export function Sidebar({ activeView, setActiveView, totalTasks }: SidebarProps)
                             {totalTasks}
                         </span>
                     </button>
-
-                    {user?.role === 'ADMIN' && (
-                        <button
-                            type="button"
-                            onClick={() => navigate('/admin')}
-                            className="flex min-h-12 w-full items-center gap-3 rounded-xl bg-transparent px-3.5 text-[#766D69] transition-colors duration-200 hover:bg-white/65 hover:text-[#24191B] sm:w-auto sm:min-w-[145px] lg:w-full lg:min-w-0"
-                        >
-                            <ShieldCheck size={18} strokeWidth={1.6} />
-                            <span className="text-xs font-medium">{t('adminPanel') || 'Admin Paneli'}</span>
-                        </button>
-                    )}
                 </nav>
             </div>
 
-            <div className="mt-7 w-full lg:mt-auto">
-                {user && (
-                    <div className="mb-3 flex items-center justify-between gap-2 rounded-xl border border-[#24191B]/15 bg-white/60 px-3.5 py-3">
-                        <div className="min-w-0">
-                            <p className="truncate text-[11px] font-semibold text-[#24191B]">{user.username}</p>
-                            <p className="text-[9px] uppercase tracking-[1.2px] text-[#766D69]">
-                                {user.role === 'ADMIN' ? (t('admin') || 'Yönetici') : (t('user') || 'Kullanıcı')}
-                            </p>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={handleLogout}
-                            aria-label={t('logout') || 'Çıkış Yap'}
-                            title={t('logout') || 'Çıkış Yap'}
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#24191B]/15 text-[#60212E] transition-colors hover:bg-[#60212E] hover:text-white"
-                        >
-                            <LogOut size={15} strokeWidth={1.8} />
-                        </button>
-                    </div>
-                )}
-
-                <div className="hidden w-full lg:block">
-                    <div className="flex items-start gap-[11px] border-t border-[#24191B]/15 pt-[18px]">
-                        <span className="mt-[5px] h-2 w-2 shrink-0 rounded-full bg-[#69ACC2]" />
-                        <div>
-                            <strong className="mb-[5px] block font-serif text-sm font-normal leading-[1.2] text-[#24191B]">
-                                {t('everythingInOnePlace')}
-                            </strong>
-                            <p className="text-[9px] leading-[1.55] text-[#766D69]">
-                                {t('organizedWork')}
-                            </p>
-                        </div>
+            <div className="mt-7 hidden w-full lg:mt-auto lg:block">
+                <div className="flex items-start gap-[11px] border-t border-[#24191B]/15 pt-[18px]">
+                    <span className="mt-[5px] h-2 w-2 shrink-0 rounded-full bg-[#69ACC2]" />
+                    <div>
+                        <strong className="mb-[5px] block font-serif text-sm font-normal leading-[1.2] text-[#24191B]">
+                            {t('everythingInOnePlace')}
+                        </strong>
+                        <p className="text-[9px] leading-[1.55] text-[#766D69]">
+                            {t('organizedWork')}
+                        </p>
                     </div>
                 </div>
             </div>
