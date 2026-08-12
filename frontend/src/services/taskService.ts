@@ -1,30 +1,25 @@
-import axios from 'axios'
+import { apiClient } from './apiClient'
 import type { NewTask, Task } from '../types/task'
-
-const API_BASE_URL = 'http://localhost:8081/api/tasks'
 
 class TaskService {
 
     async getAll(): Promise<Task[]> {
-        const response = await axios.get<Task[]>(API_BASE_URL)
+        const response = await apiClient.get<Task[]>('/tasks')
         return response.data
     }
 
     async getById(id: number): Promise<Task> {
-        const response = await axios.get<Task>(`${API_BASE_URL}/${id}`)
+        const response = await apiClient.get<Task>(`/tasks/${id}`)
         return response.data
     }
 
     async create(task: NewTask): Promise<Task> {
-        const response = await axios.post<Task>(API_BASE_URL, task)
+        const response = await apiClient.post<Task>('/tasks', task)
         return response.data
     }
 
     async update(id: number, task: NewTask): Promise<Task> {
-        const response = await axios.put<Task>(
-            `${API_BASE_URL}/${id}`,
-            task
-        )
+        const response = await apiClient.put<Task>(`/tasks/${id}`, task)
         return response.data
     }
 
@@ -37,7 +32,7 @@ class TaskService {
     }
 
     async delete(id: number): Promise<void> {
-        await axios.delete(`${API_BASE_URL}/${id}`)
+        await apiClient.delete(`/tasks/${id}`)
     }
 }
 

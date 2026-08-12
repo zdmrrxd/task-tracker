@@ -5,6 +5,8 @@ export interface Task {
     status: string
     priority: string
     dueDate: string | null
+    ownerId?: number
+    ownerUsername?: string
 }
 
 export interface NewTask {
