@@ -67,13 +67,13 @@ class TaskServiceTest {
         task.setTitle("User Task");
         task.setOwner(regularUser);
 
-        when(taskRepository.findByOwnerId(1L)).thenReturn(List.of(task));
+        when(taskRepository.findByOwner_Id(1L)).thenReturn(List.of(task));
 
         List<Task> result = taskService.getVisibleTasks(regularUser);
 
         assertEquals(1, result.size());
         assertEquals("User Task", result.get(0).getTitle());
-        verify(taskRepository).findByOwnerId(1L);
+        verify(taskRepository).findByOwner_Id(1L);
     }
 
     @Test

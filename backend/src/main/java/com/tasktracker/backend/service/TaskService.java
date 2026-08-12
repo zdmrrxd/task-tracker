@@ -26,7 +26,7 @@ public class TaskService {
         if (currentUser.getRole() == Role.ADMIN) {
             return taskRepository.findAll();
         }
-        return taskRepository.findByOwnerId(currentUser.getId());
+        return taskRepository.findByOwner_Id(currentUser.getId());
     }
 
     public Optional<Task> getTaskById(Long id) {
