@@ -8,6 +8,7 @@ import com.tasktracker.backend.model.Role;
 import com.tasktracker.backend.model.User;
 import com.tasktracker.backend.repository.UserRepository;
 import com.tasktracker.backend.security.JwtUtil;
+import com.tasktracker.backend.security.RsaKeyService;
 import com.tasktracker.backend.exception.AccountDisabledException;
 import com.tasktracker.backend.exception.DuplicateResourceException;
 import jakarta.validation.Valid;
@@ -22,6 +23,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -30,17 +33,29 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final RsaKeyService rsaKeyService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            JwtUtil jwtUtil
+            JwtUtil jwtUtil,
+            RsaKeyService rsaKeyService
     ) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.rsaKeyService = rsaKeyService;
+    }
+
+    /**
+     * Frontend, formu göndermeden önce bu public key ile şifreyi RSA-OAEP kullanarak
+     * şifreler. Böylece şifre tarayıcı Network/DevTools ekranında düz metin olarak görünmez.
+     */
+    @GetMapping("/public-key")
+    public ResponseEntity<Map<String, String>> getPublicKey() {
+        return ResponseEntity.ok(Map.of("publicKey", rsaKeyService.getPublicKeyBase64()));
     }
 
     /**
@@ -48,11 +63,13 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        String rawPassword = rsaKeyService.decrypt(request.getPassword());
+
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getUsernameOrEmail(),
-                            request.getPassword()
+                            rawPassword
                     )
             );
 
@@ -80,10 +97,16 @@ public class AuthController {
             throw new DuplicateResourceException("Bu e-posta adresi zaten kayıtlı.");
         }
 
+        String rawPassword = rsaKeyService.decrypt(request.getPassword());
+
+        if (rawPassword.length() < 6) {
+            throw new IllegalArgumentException("Şifre en az 6 karakter olmalıdır.");
+        }
+
         User user = new User(
                 request.getUsername(),
                 request.getEmail(),
-                passwordEncoder.encode(request.getPassword()),
+                passwordEncoder.encode(rawPassword),
                 Role.USER
         );
         userRepository.save(user);

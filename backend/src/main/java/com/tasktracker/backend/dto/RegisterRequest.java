@@ -14,8 +14,11 @@ public class RegisterRequest {
     @Email(message = "Geçerli bir e-posta adresi giriniz.")
     private String email;
 
+    /**
+     * RSA ile şifrelenmiş (base64) şifre. Gerçek uzunluk kontrolü AuthController'da,
+     * şifre çözüldükten sonra yapılır.
+     */
     @NotBlank(message = "Şifre zorunludur.")
-    @Size(min = 6, message = "Şifre en az 6 karakter olmalıdır.")
     private String password;
 
     public RegisterRequest() {

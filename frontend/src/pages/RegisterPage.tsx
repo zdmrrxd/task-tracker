@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import { authService } from '../services/authService'
 import { tokenStorage } from '../services/apiClient'
+import { LanguageFlagSwitcher } from '../components/LanguageFlagSwitcher'
 
 export function RegisterPage() {
     const { t } = useTranslation()
@@ -72,7 +73,8 @@ export function RegisterPage() {
     }
 
     return (
-        <div className="flex min-h-screen w-full items-center justify-center bg-[#FAF8F1] px-4 py-10 text-[#24191B]">
+        <div className="relative flex min-h-screen w-full items-center justify-center bg-[#FAF8F1] px-4 py-10 text-[#24191B]">
+            <LanguageFlagSwitcher />
             <div className="w-full max-w-[420px]">
                 <div className="mb-9 flex flex-col items-center text-center">
                     <div className="flex h-[64px] w-[64px] items-center justify-center rounded-full border border-[#60212E] bg-white text-[#60212E] shadow-[0_10px_30px_rgba(96,33,46,0.08)]">
