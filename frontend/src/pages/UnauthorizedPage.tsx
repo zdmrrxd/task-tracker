@@ -1,12 +1,10 @@
 import { ShieldAlert } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useAuth } from '../context/AuthContext'
 
 export function UnauthorizedPage() {
     const { t } = useTranslation()
     const navigate = useNavigate()
-    const { user } = useAuth()
 
     return (
         <div className="flex min-h-screen w-full flex-col items-center justify-center bg-[#FAF8F1] px-4 text-center text-[#24191B]">
@@ -21,13 +19,6 @@ export function UnauthorizedPage() {
             <p className="mt-3 max-w-[420px] text-[12px] leading-[1.7] text-[#766D69]">
                 {t('unauthorizedMessage') ||
                     'Bu sayfayı görüntülemek için gerekli yetkiye sahip değilsiniz. Bu işlem için yönetici (ADMIN) rolü gereklidir.'}
-                {user && (
-                    <>
-                        {' '}
-                        {t('unauthorizedCurrentRole', { role: user.role }) ||
-                            `Şu anki rolünüz: ${user.role}`}
-                    </>
-                )}
             </p>
 
             <button

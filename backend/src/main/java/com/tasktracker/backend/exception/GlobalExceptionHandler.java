@@ -1,5 +1,7 @@
 package com.tasktracker.backend.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -13,6 +15,8 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(
@@ -79,12 +83,32 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", ex.getMessage()));
     }
 
+    /**
+     * Kullanıcıya gösterilmesi güvenli olan, öngörülen istek hataları
+     * (şifre çözme hatası, manuel doğrulama hataları vb.)
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+    }
+
+    /**
+     * Bir kullanıcının izin verilen maksimum görev sayısını aşmaya çalışması.
+     */
+    @ExceptionHandler(TaskLimitExceededException.class)
+    public ResponseEntity<Map<String, String>> handleTaskLimitExceeded(TaskLimitExceededException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", ex.getMessage()));
+    }
+
+    /**
+     * Beklenmeyen tüm hatalar: istemciye asla iç sistem detayı (stack trace, SQL
+     * mesajı, sınıf adı vb.) döndürülmez - sadece sunucu loglarına yazılır.
+     * Aksi bir bilgi ifşası (information disclosure) güvenlik açığı olurdu.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneralException(Exception ex) {
-
-        Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage());
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        log.error("Beklenmeyen hata", ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin."));
     }
 }

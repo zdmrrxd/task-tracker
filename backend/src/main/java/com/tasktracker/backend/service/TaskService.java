@@ -1,10 +1,12 @@
 package com.tasktracker.backend.service;
 
 import com.tasktracker.backend.exception.AccessForbiddenException;
+import com.tasktracker.backend.exception.TaskLimitExceededException;
 import com.tasktracker.backend.model.Role;
 import com.tasktracker.backend.model.Task;
 import com.tasktracker.backend.model.User;
 import com.tasktracker.backend.repository.TaskRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +16,9 @@ import java.util.Optional;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+
+    @Value("${app.tasks.max-per-user:300}")
+    private int maxTasksPerUser = 300;
 
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
@@ -45,6 +50,13 @@ public class TaskService {
     }
 
     public Task createTask(Task task, User owner) {
+        long existingCount = taskRepository.countByOwner_Id(owner.getId());
+        if (existingCount >= maxTasksPerUser) {
+            throw new TaskLimitExceededException(
+                    "Görev limitine ulaştınız (maksimum " + maxTasksPerUser + "). " +
+                            "Yeni görev ekleyebilmek için önce bazı görevleri tamamlayın veya silin.");
+        }
+
         task.setOwner(owner);
         return taskRepository.save(task);
     }
