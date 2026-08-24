@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+
 import { Header } from '../components/Header'
 import { OverviewSection } from '../components/OverviewSection'
 import { Sidebar } from '../components/Sidebar'
 import { TaskListSection } from '../components/TaskListSection'
 import { TaskModal } from '../components/TaskModal'
 import { TaskDetailModal } from '../components/TaskDetailModal'
+
 import { taskService } from '../services/taskService'
 import { useAuth } from '../context/AuthContext'
 
@@ -31,24 +33,39 @@ export function TaskTrackerPage() {
     const { user } = useAuth()
 
     const isAdmin =
-        String(user?.role ?? '').trim().toUpperCase() === 'ADMIN'
+        String(user?.role ?? '')
+            .trim()
+            .toUpperCase() === 'ADMIN'
 
     const greeting = getGreeting(t)
 
-    const today = new Date().toISOString().slice(0, 10)
+    const today =
+        new Date()
+            .toISOString()
+            .slice(0, 10)
 
-    const [tasks, setTasks] = useState<Task[]>([])
+    const [tasks, setTasks] =
+        useState<Task[]>([])
 
     const [errors, setErrors] = useState({
         title: '',
         description: '',
     })
 
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [isSaving, setIsSaving] = useState(false)
-    const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
-    const [deletingTaskId, setDeletingTaskId] = useState<number | null>(null)
-    const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+    const [isModalOpen, setIsModalOpen] =
+        useState(false)
+
+    const [isSaving, setIsSaving] =
+        useState(false)
+
+    const [editingTaskId, setEditingTaskId] =
+        useState<number | null>(null)
+
+    const [deletingTaskId, setDeletingTaskId] =
+        useState<number | null>(null)
+
+    const [selectedTask, setSelectedTask] =
+        useState<Task | null>(null)
 
     const [activeView, setActiveView] =
         useState<ViewMode>('tasks')
@@ -56,8 +73,11 @@ export function TaskTrackerPage() {
     const [activeTab, setActiveTab] =
         useState<TabFilter>('ALL')
 
-    const [searchTerm, setSearchTerm] = useState('')
-    const [filterOpen, setFilterOpen] = useState(false)
+    const [searchTerm, setSearchTerm] =
+        useState('')
+
+    const [filterOpen, setFilterOpen] =
+        useState(false)
 
     const [priorityFilter, setPriorityFilter] =
         useState<PriorityFilter>('ALL')
@@ -65,24 +85,31 @@ export function TaskTrackerPage() {
     const [sortMode, setSortMode] =
         useState<SortMode>('DEFAULT')
 
-    const [currentPage, setCurrentPage] = useState(1)
+    const [currentPage, setCurrentPage] =
+        useState(1)
 
     const tasksPerPage = 5
 
-    const [newTask, setNewTask] = useState<NewTask>({
-        title: '',
-        description: '',
-        status: 'IN_PROGRESS',
-        priority: 'MEDIUM',
-        dueDate: '',
-    })
+    const [newTask, setNewTask] =
+        useState<NewTask>({
+            title: '',
+            description: '',
+            status: 'IN_PROGRESS',
+            priority: 'MEDIUM',
+            dueDate: '',
+        })
 
     const fetchTasks = async () => {
         try {
-            const data = await taskService.getAll()
+            const data =
+                await taskService.getAll()
+
             setTasks(data)
         } catch (error) {
-            console.error('Failed to fetch tasks:', error)
+            console.error(
+                'Failed to fetch tasks:',
+                error
+            )
         }
     }
 
@@ -101,18 +128,32 @@ export function TaskTrackerPage() {
             dueDate: '',
         })
 
+        setErrors({
+            title: '',
+            description: '',
+        })
+
         setIsModalOpen(true)
     }
 
-    const openEditModal = (task: Task) => {
+    const openEditModal = (
+        task: Task
+    ) => {
         setEditingTaskId(task.id)
 
         setNewTask({
             title: task.title,
-            description: task.description || '',
+            description:
+                task.description || '',
             status: task.status,
             priority: task.priority,
-            dueDate: task.dueDate || '',
+            dueDate:
+                task.dueDate || '',
+        })
+
+        setErrors({
+            title: '',
+            description: '',
         })
 
         setIsModalOpen(true)
@@ -124,7 +165,9 @@ export function TaskTrackerPage() {
         }
     }
 
-    const openTaskDetails = (task: Task) => {
+    const openTaskDetails = (
+        task: Task
+    ) => {
         setSelectedTask(task)
     }
 
@@ -146,13 +189,18 @@ export function TaskTrackerPage() {
             validationErrors.title =
                 t('titleRequired') ||
                 'Task title is required.'
-        } else if (newTask.title.trim().length > 100) {
+        } else if (
+            newTask.title.trim().length > 100
+        ) {
             validationErrors.title =
                 t('titleTooLong') ||
                 'Task title cannot exceed 100 characters.'
         }
 
-        if (newTask.description.trim().length > 500) {
+        if (
+            newTask.description.trim().length >
+            500
+        ) {
             validationErrors.description =
                 t('descriptionTooLong') ||
                 'Description cannot exceed 500 characters.'
@@ -175,13 +223,15 @@ export function TaskTrackerPage() {
                 editingTaskId !== null
                     ? tasks.find(
                         (task) =>
-                            task.id === editingTaskId
+                            task.id ===
+                            editingTaskId
                     )
                     : undefined
 
             if (
                 !originalTask ||
-                originalTask.dueDate !== newTask.dueDate
+                originalTask.dueDate !==
+                newTask.dueDate
             ) {
                 alert(
                     t('pastDueDate') ||
@@ -195,19 +245,26 @@ export function TaskTrackerPage() {
         try {
             setIsSaving(true)
 
-            const savedTask = await taskService.save(
-                newTask,
-                editingTaskId
-            )
+            const savedTask =
+                await taskService.save(
+                    newTask,
+                    editingTaskId
+                )
 
-            setTasks((currentTasks) =>
-                editingTaskId !== null
-                    ? currentTasks.map((task) =>
-                        task.id === editingTaskId
-                            ? savedTask
-                            : task
-                    )
-                    : [...currentTasks, savedTask]
+            setTasks(
+                (currentTasks) =>
+                    editingTaskId !== null
+                        ? currentTasks.map(
+                            (task) =>
+                                task.id ===
+                                editingTaskId
+                                    ? savedTask
+                                    : task
+                        )
+                        : [
+                            ...currentTasks,
+                            savedTask,
+                        ]
             )
 
             setIsModalOpen(false)
@@ -232,9 +289,10 @@ export function TaskTrackerPage() {
             )
 
             if (error.response?.data) {
-                const message = Object.values(
-                    error.response.data
-                ).join('\n')
+                const message =
+                    Object.values(
+                        error.response.data
+                    ).join('\n')
 
                 alert(message)
             } else {
@@ -251,10 +309,15 @@ export function TaskTrackerPage() {
         }
     }
 
-    const handleDeleteTask = async (task: Task) => {
-        const confirmMsg = t('confirmDelete')
-            ? `${t('confirmDelete')} "${task.title}"?`
-            : `Are you sure you want to delete the task "${task.title}"?`
+    const handleDeleteTask = async (
+        task: Task
+    ) => {
+        const confirmMsg =
+            t('confirmDelete')
+                ? `${t(
+                    'confirmDelete'
+                )} "${task.title}"?`
+                : `Are you sure you want to delete the task "${task.title}"?`
 
         const shouldDelete =
             window.confirm(confirmMsg)
@@ -266,13 +329,17 @@ export function TaskTrackerPage() {
         try {
             setDeletingTaskId(task.id)
 
-            await taskService.delete(task.id)
+            await taskService.delete(
+                task.id
+            )
 
-            setTasks((currentTasks) =>
-                currentTasks.filter(
-                    (currentTask) =>
-                        currentTask.id !== task.id
-                )
+            setTasks(
+                (currentTasks) =>
+                    currentTasks.filter(
+                        (currentTask) =>
+                            currentTask.id !==
+                            task.id
+                    )
             )
         } catch (error) {
             console.error(
@@ -289,141 +356,229 @@ export function TaskTrackerPage() {
         }
     }
 
-    // UI-Level Dynamics (Filtering, Sorting, Pagination)
+    /*
+     * Performance optimization:
+     *
+     * These statistics used to run several separate
+     * Array.filter() operations on every render.
+     *
+     * Now the entire task list is traversed once
+     * and the result is memoized.
+     */
+    const taskStats = useMemo(() => {
+        let inProgress = 0
+        let completed = 0
+        let dueToday = 0
+        let upcoming = 0
 
-    const totalTasks = tasks.length
-
-    const inProgressTasks = tasks.filter(
-        (task) =>
-            normalizeStatus(task.status) ===
-            'IN_PROGRESS'
-    ).length
-
-    const completedTasks = tasks.filter(
-        (task) =>
-            normalizeStatus(task.status) ===
-            'COMPLETED'
-    ).length
-
-    const dueTodayTasks = tasks.filter(
-        (task) =>
-            task.dueDate === today &&
-            normalizeStatus(task.status) !==
-            'COMPLETED'
-    ).length
-
-    const upcomingTasks = tasks.filter(
-        (task) =>
-            Boolean(task.dueDate) &&
-            task.dueDate! > today &&
-            normalizeStatus(task.status) !==
-            'COMPLETED'
-    ).length
-
-    const displayedTasks = tasks
-        .filter((task) => {
-            const query =
-                searchTerm.trim().toLowerCase()
-
-            const matchesSearch =
-                !query ||
-                task.title
-                    ?.toLowerCase()
-                    .includes(query) ||
-                task.description
-                    ?.toLowerCase()
-                    .includes(query)
-
-            const matchesTab =
-                activeTab === 'ALL' ||
-                (activeTab === 'UPCOMING'
-                    ? Boolean(task.dueDate) &&
-                    task.dueDate! > today &&
-                    normalizeStatus(
-                        task.status
-                    ) !== 'COMPLETED'
-                    : normalizeStatus(
+        for (const task of tasks) {
+            const status =
+                normalizeStatus(
                     task.status
-                ) === activeTab)
-
-            const matchesPriority =
-                priorityFilter === 'ALL' ||
-                task.priority?.toUpperCase() ===
-                priorityFilter
-
-            return (
-                matchesSearch &&
-                matchesTab &&
-                matchesPriority
-            )
-        })
-        .sort((a, b) => {
-            if (sortMode === 'PRIORITY_HIGH') {
-                return (
-                    (priorityWeight[
-                        b.priority?.toUpperCase()
-                        ] ?? 0) -
-                    (priorityWeight[
-                        a.priority?.toUpperCase()
-                        ] ?? 0)
                 )
+
+            if (
+                status === 'IN_PROGRESS'
+            ) {
+                inProgress += 1
             }
 
-            if (sortMode === 'PRIORITY_LOW') {
-                return (
-                    (priorityWeight[
-                        a.priority?.toUpperCase()
-                        ] ?? 0) -
-                    (priorityWeight[
-                        b.priority?.toUpperCase()
-                        ] ?? 0)
-                )
+            if (
+                status === 'COMPLETED'
+            ) {
+                completed += 1
             }
 
-            if (sortMode === 'TITLE') {
-                return a.title.localeCompare(
-                    b.title
-                )
+            if (
+                task.dueDate === today &&
+                status !== 'COMPLETED'
+            ) {
+                dueToday += 1
             }
 
-            if (sortMode === 'DATE') {
-                if (!a.dueDate && !b.dueDate) {
+            if (
+                task.dueDate &&
+                task.dueDate > today &&
+                status !== 'COMPLETED'
+            ) {
+                upcoming += 1
+            }
+        }
+
+        return {
+            total: tasks.length,
+            inProgress,
+            completed,
+            dueToday,
+            upcoming,
+        }
+    }, [tasks, today])
+
+    /*
+     * Performance optimization:
+     *
+     * Filtering and sorting are memoized.
+     * They only run again when one of their
+     * actual dependencies changes.
+     */
+    const displayedTasks =
+        useMemo(() => {
+            const query =
+                searchTerm
+                    .trim()
+                    .toLowerCase()
+
+            return tasks
+                .filter((task) => {
+                    const status =
+                        normalizeStatus(
+                            task.status
+                        )
+
+                    const matchesSearch =
+                        !query ||
+                        task.title
+                            ?.toLowerCase()
+                            .includes(
+                                query
+                            ) ||
+                        task.description
+                            ?.toLowerCase()
+                            .includes(
+                                query
+                            )
+
+                    const matchesTab =
+                        activeTab === 'ALL' ||
+                        (activeTab === 'UPCOMING'
+                            ? task.dueDate != null &&
+                            task.dueDate > today &&
+                            status !== 'COMPLETED'
+                            : status === activeTab)
+
+                    const matchesPriority =
+                        priorityFilter ===
+                        'ALL' ||
+                        task.priority
+                            ?.toUpperCase() ===
+                        priorityFilter
+
+                    return (
+                        matchesSearch &&
+                        matchesTab &&
+                        matchesPriority
+                    )
+                })
+                .sort((a, b) => {
+                    if (
+                        sortMode ===
+                        'PRIORITY_HIGH'
+                    ) {
+                        return (
+                            (priorityWeight[
+                                b.priority?.toUpperCase()
+                                ] ?? 0) -
+                            (priorityWeight[
+                                a.priority?.toUpperCase()
+                                ] ?? 0)
+                        )
+                    }
+
+                    if (
+                        sortMode ===
+                        'PRIORITY_LOW'
+                    ) {
+                        return (
+                            (priorityWeight[
+                                a.priority?.toUpperCase()
+                                ] ?? 0) -
+                            (priorityWeight[
+                                b.priority?.toUpperCase()
+                                ] ?? 0)
+                        )
+                    }
+
+                    if (
+                        sortMode ===
+                        'TITLE'
+                    ) {
+                        return a.title.localeCompare(
+                            b.title
+                        )
+                    }
+
+                    if (
+                        sortMode ===
+                        'DATE'
+                    ) {
+                        if (
+                            !a.dueDate &&
+                            !b.dueDate
+                        ) {
+                            return 0
+                        }
+
+                        if (
+                            !a.dueDate
+                        ) {
+                            return 1
+                        }
+
+                        if (
+                            !b.dueDate
+                        ) {
+                            return -1
+                        }
+
+                        return a.dueDate.localeCompare(
+                            b.dueDate
+                        )
+                    }
+
                     return 0
-                }
+                })
+        }, [
+            tasks,
+            searchTerm,
+            activeTab,
+            priorityFilter,
+            sortMode,
+            today,
+        ])
 
-                if (!a.dueDate) {
-                    return 1
-                }
-
-                if (!b.dueDate) {
-                    return -1
-                }
-
-                return a.dueDate.localeCompare(
-                    b.dueDate
-                )
-            }
-
-            return 0
-        })
-
-    const totalPages = Math.max(
-        1,
-        Math.ceil(
-            displayedTasks.length / tasksPerPage
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                displayedTasks.length /
+                tasksPerPage
+            )
         )
-    )
 
-    const safeCurrentPage = Math.min(
-        currentPage,
-        totalPages
-    )
+    const safeCurrentPage =
+        Math.min(
+            currentPage,
+            totalPages
+        )
 
+    /*
+     * Pagination is also memoized.
+     */
     const paginatedTasks =
-        displayedTasks.slice(
-            (safeCurrentPage - 1) *
-            tasksPerPage,
-            safeCurrentPage * tasksPerPage
+        useMemo(
+            () =>
+                displayedTasks.slice(
+                    (safeCurrentPage -
+                        1) *
+                    tasksPerPage,
+                    safeCurrentPage *
+                    tasksPerPage
+                ),
+            [
+                displayedTasks,
+                safeCurrentPage,
+                tasksPerPage,
+            ]
         )
 
     useEffect(() => {
@@ -436,45 +591,73 @@ export function TaskTrackerPage() {
     ])
 
     useEffect(() => {
-        if (currentPage > totalPages) {
-            setCurrentPage(totalPages)
+        if (
+            currentPage >
+            totalPages
+        ) {
+            setCurrentPage(
+                totalPages
+            )
         }
-    }, [currentPage, totalPages])
+    }, [
+        currentPage,
+        totalPages,
+    ])
 
     const cycleSortMode = () => {
-        setSortMode((current) => {
-            if (current === 'DEFAULT') {
-                return 'PRIORITY_HIGH'
-            }
+        setSortMode(
+            (current) => {
+                if (
+                    current ===
+                    'DEFAULT'
+                ) {
+                    return 'PRIORITY_HIGH'
+                }
 
-            if (current === 'PRIORITY_HIGH') {
-                return 'PRIORITY_LOW'
-            }
+                if (
+                    current ===
+                    'PRIORITY_HIGH'
+                ) {
+                    return 'PRIORITY_LOW'
+                }
 
-            if (current === 'PRIORITY_LOW') {
-                return 'TITLE'
-            }
+                if (
+                    current ===
+                    'PRIORITY_LOW'
+                ) {
+                    return 'TITLE'
+                }
 
-            if (current === 'TITLE') {
-                return 'DATE'
-            }
+                if (
+                    current ===
+                    'TITLE'
+                ) {
+                    return 'DATE'
+                }
 
-            return 'DEFAULT'
-        })
+                return 'DEFAULT'
+            }
+        )
     }
 
     const sortLabel =
-        sortMode === 'PRIORITY_HIGH'
+        sortMode ===
+        'PRIORITY_HIGH'
             ? t('highToLow') ||
             'High → Low'
-            : sortMode === 'PRIORITY_LOW'
+            : sortMode ===
+            'PRIORITY_LOW'
                 ? t('lowToHigh') ||
                 'Low → High'
-                : sortMode === 'TITLE'
+                : sortMode ===
+                'TITLE'
                     ? t('aToZ') ||
                     'A → Z'
-                    : sortMode === 'DATE'
-                        ? t('dueDate') ||
+                    : sortMode ===
+                    'DATE'
+                        ? t(
+                            'dueDate'
+                        ) ||
                         'Due date'
                         : t('sort') ||
                         'Sort'
@@ -483,55 +666,79 @@ export function TaskTrackerPage() {
         <>
             <div className="min-h-screen w-full bg-[#FAF8F1] text-[#24191B] lg:grid lg:grid-cols-[225px_minmax(0,1fr)] xl:grid-cols-[255px_minmax(0,1fr)]">
                 <Sidebar
-                    activeView={activeView}
-                    setActiveView={setActiveView}
-                    totalTasks={totalTasks}
-                    isAdmin={isAdmin}
+                    activeView={
+                        activeView
+                    }
+                    setActiveView={
+                        setActiveView
+                    }
+                    totalTasks={
+                        taskStats.total
+                    }
+                    isAdmin={
+                        isAdmin
+                    }
                 />
 
                 <main className="min-w-0 px-4 pb-10 pt-7 sm:px-8 sm:pt-8 xl:px-12 xl:pb-[55px] xl:pt-[42px]">
                     <Header
-                        greeting={greeting}
-                        searchTerm={searchTerm}
-                        setSearchTerm={setSearchTerm}
+                        greeting={
+                            greeting
+                        }
+                        searchTerm={
+                            searchTerm
+                        }
+                        setSearchTerm={
+                            setSearchTerm
+                        }
                         onOpenTaskModal={
                             openTaskModal
                         }
                     />
 
                     <OverviewSection
-                        totalTasks={totalTasks}
+                        totalTasks={
+                            taskStats.total
+                        }
                         inProgressTasks={
-                            inProgressTasks
+                            taskStats.inProgress
                         }
                         completedTasks={
-                            completedTasks
+                            taskStats.completed
                         }
                         dueTodayTasks={
-                            dueTodayTasks
+                            taskStats.dueToday
                         }
                     />
 
                     <TaskListSection
-                        isAdmin={isAdmin}
-                        tasks={tasks}
+                        isAdmin={
+                            isAdmin
+                        }
+                        tasks={
+                            tasks
+                        }
                         displayedTasks={
                             displayedTasks
                         }
                         paginatedTasks={
                             paginatedTasks
                         }
-                        totalTasks={totalTasks}
+                        totalTasks={
+                            taskStats.total
+                        }
                         inProgressTasks={
-                            inProgressTasks
+                            taskStats.inProgress
                         }
                         completedTasks={
-                            completedTasks
+                            taskStats.completed
                         }
                         upcomingTasks={
-                            upcomingTasks
+                            taskStats.upcoming
                         }
-                        activeTab={activeTab}
+                        activeTab={
+                            activeTab
+                        }
                         setActiveTab={
                             setActiveTab
                         }
@@ -541,19 +748,27 @@ export function TaskTrackerPage() {
                         setPriorityFilter={
                             setPriorityFilter
                         }
-                        filterOpen={filterOpen}
+                        filterOpen={
+                            filterOpen
+                        }
                         setFilterOpen={
                             setFilterOpen
                         }
-                        sortLabel={sortLabel}
+                        sortLabel={
+                            sortLabel
+                        }
                         cycleSortMode={
                             cycleSortMode
                         }
-                        currentPage={currentPage}
+                        currentPage={
+                            currentPage
+                        }
                         setCurrentPage={
                             setCurrentPage
                         }
-                        totalPages={totalPages}
+                        totalPages={
+                            totalPages
+                        }
                         safeCurrentPage={
                             safeCurrentPage
                         }
@@ -580,23 +795,49 @@ export function TaskTrackerPage() {
             </div>
 
             <TaskModal
-                isModalOpen={isModalOpen}
-                editingTaskId={editingTaskId}
-                newTask={newTask}
-                setNewTask={setNewTask}
-                errors={errors}
-                isSaving={isSaving}
-                today={today}
-                onClose={closeTaskModal}
-                onSave={handleSaveTask}
+                isModalOpen={
+                    isModalOpen
+                }
+                editingTaskId={
+                    editingTaskId
+                }
+                newTask={
+                    newTask
+                }
+                setNewTask={
+                    setNewTask
+                }
+                errors={
+                    errors
+                }
+                isSaving={
+                    isSaving
+                }
+                today={
+                    today
+                }
+                onClose={
+                    closeTaskModal
+                }
+                onSave={
+                    handleSaveTask
+                }
             />
 
             <TaskDetailModal
-                task={selectedTask}
-                onClose={closeTaskDetails}
-                onEdit={(task) => {
+                task={
+                    selectedTask
+                }
+                onClose={
+                    closeTaskDetails
+                }
+                onEdit={(
+                    task
+                ) => {
                     closeTaskDetails()
-                    openEditModal(task)
+                    openEditModal(
+                        task
+                    )
                 }}
             />
         </>

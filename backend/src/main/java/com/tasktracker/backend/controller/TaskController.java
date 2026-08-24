@@ -11,9 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * All endpoints here require an authenticated user (enforced by SecurityConfig).
- * A regular USER only ever sees/modifies their own tasks; an ADMIN sees everything.
- * Ownership checks are enforced in TaskService, not just hidden in the frontend.
+ * All endpoints here require an authenticated user.
+ *
+ * A regular USER only ever sees/modifies their own tasks.
+ * An ADMIN can see every task.
+ *
+ * Ownership checks are enforced in TaskService.
  */
 @RestController
 @RequestMapping("/api/tasks")
@@ -26,39 +29,64 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<Task> getAllTasks(@AuthenticationPrincipal User currentUser) {
+    public List<Task> getAllTasks(
+            @AuthenticationPrincipal User currentUser
+    ) {
         return taskService.getVisibleTasks(currentUser);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTask(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
-        return taskService.getAuthorizedTask(id, currentUser)
+    public ResponseEntity<Task> getTask(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        return taskService
+                .getAuthorizedTask(id, currentUser)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(
+                        ResponseEntity.notFound().build()
+                );
     }
 
     @PostMapping
-    public Task createTask(@Valid @RequestBody Task task, @AuthenticationPrincipal User currentUser) {
-        return taskService.createTask(task, currentUser);
+    public Task createTask(
+            @Valid @RequestBody Task task,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        return taskService.createTask(
+                task,
+                currentUser
+        );
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Task> updateTask(
             @PathVariable Long id,
             @Valid @RequestBody Task updatedTask,
-            @AuthenticationPrincipal User currentUser) {
-
-        return taskService.updateTask(id, updatedTask, currentUser)
+            @AuthenticationPrincipal User currentUser
+    ) {
+        return taskService
+                .updateTask(
+                        id,
+                        updatedTask,
+                        currentUser
+                )
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElse(
+                        ResponseEntity.notFound().build()
+                );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
-        if (taskService.getTaskById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        taskService.deleteTask(id, currentUser);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> deleteTask(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        return taskService.deleteTask(
+                id,
+                currentUser
+        )
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }
